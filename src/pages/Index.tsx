@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
   id: string;
@@ -17,79 +19,125 @@ interface Transaction {
   description: string;
   amount: number;
   date: string;
-  isRecurrent?: boolean;
+  is_recurrent?: boolean;
   installments?: number;
-  currentInstallment?: number;
-  idealDay?: number;
+  current_installment?: number;
+  ideal_day?: number;
 }
 
-interface UserData {
+interface UserProfile {
+  id: string;
+  username: string;
   salary: number;
-  idealDay: number;
-  totalSaved: number;
-  transactions: Transaction[];
-  currentCycle: string;
+  ideal_day: number;
+  total_saved: number;
+  current_cycle: string;
 }
 
 const Index = () => {
-  const [userData, setUserData] = useState<UserData>({
-    salary: 0,
-    idealDay: 5,
-    totalSaved: 0,
-    transactions: [],
-    currentCycle: new Date().toISOString().slice(0, 7)
-  });
-
-  const [isFirstTime, setIsFirstTime] = useState(true);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
     description: '',
     amount: 0,
     type: 'casual' as Transaction['type'],
-    isRecurrent: false,
+    is_recurrent: false,
     installments: 1,
-    idealDay: 5
+    ideal_day: 5
   });
 
-  // Load data from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('budget-smart-cycle');
-    if (saved) {
-      const data = JSON.parse(saved);
-      setUserData(data);
-      setIsFirstTime(false);
-    }
-  }, []);
+  const [setupData, setSetupData] = useState({
+    salary: 0,
+    ideal_day: 5
+  });
 
-  // Save data to localStorage
-  const saveData = (data: UserData) => {
-    localStorage.setItem('budget-smart-cycle', JSON.stringify(data));
-    setUserData(data);
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  // Load user data
+  useEffect(() => {
+    if (user) {
+      loadUserProfile();
+      loadTransactions();
+    }
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error loading profile:', error);
+      toast.error('Erro ao carregar perfil');
+    } else if (data) {
+      setUserProfile(data);
+      setIsFirstTime(data.salary === 0);
+    }
+    setLoading(false);
   };
 
-  // Calculate totals
+  const loadTransactions = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading transactions:', error);
+      toast.error('Erro ao carregar transações');
+    } else {
+      setTransactions(data || []);
+    }
+  };
+
   const calculateTotals = () => {
-    const currentMonthTransactions = userData.transactions.filter(t => 
-      t.date.startsWith(userData.currentCycle)
+    if (!userProfile) return {
+      totalIncome: 0,
+      totalFixed: 0,
+      totalCard: 0,
+      totalCasual: 0,
+      totalExpenses: 0,
+      availableBalance: 0
+    };
+
+    const currentMonthTransactions = transactions.filter(t => 
+      t.date.startsWith(userProfile.current_cycle)
     );
 
-    const totalIncome = userData.salary + currentMonthTransactions
+    const totalIncome = userProfile.salary + currentMonthTransactions
       .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalFixed = currentMonthTransactions
       .filter(t => t.type === 'fixed')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalCard = currentMonthTransactions
       .filter(t => t.type === 'card')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalCasual = currentMonthTransactions
       .filter(t => t.type === 'casual')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalExpenses = totalFixed + totalCard + totalCasual;
     const availableBalance = totalIncome - totalExpenses;
@@ -104,118 +152,188 @@ const Index = () => {
     };
   };
 
-  const addTransaction = () => {
-    if (!newTransaction.description || newTransaction.amount <= 0) {
+  const setupInitialData = async () => {
+    if (!user || !userProfile) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        salary: setupData.salary,
+        ideal_day: setupData.ideal_day
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error('Erro ao salvar configuração');
+    } else {
+      setUserProfile({
+        ...userProfile,
+        salary: setupData.salary,
+        ideal_day: setupData.ideal_day
+      });
+      setIsFirstTime(false);
+      toast.success('Configuração inicial concluída!');
+    }
+  };
+
+  const addTransaction = async () => {
+    if (!user || !newTransaction.description || newTransaction.amount <= 0) {
       toast.error('Preencha todos os campos corretamente');
       return;
     }
 
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      ...newTransaction,
-      date: userData.currentCycle + '-01'
+    const transactionData = {
+      user_id: user.id,
+      type: newTransaction.type,
+      description: newTransaction.description,
+      amount: newTransaction.amount,
+      date: userProfile?.current_cycle + '-01',
+      is_recurrent: newTransaction.is_recurrent,
+      installments: newTransaction.installments,
+      current_installment: 1,
+      ideal_day: newTransaction.ideal_day
     };
 
-    if (newTransaction.type === 'card' && !newTransaction.isRecurrent) {
+    if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
       // Handle installments
-      const transactions = [];
+      const transactionsToInsert = [];
       for (let i = 0; i < newTransaction.installments; i++) {
-        const installmentDate = new Date(userData.currentCycle + '-01');
+        const installmentDate = new Date(userProfile?.current_cycle + '-01');
         installmentDate.setMonth(installmentDate.getMonth() + i);
-        transactions.push({
-          ...transaction,
-          id: `${transaction.id}-${i}`,
+        transactionsToInsert.push({
+          ...transactionData,
           date: installmentDate.toISOString().slice(0, 7) + '-01',
-          currentInstallment: i + 1,
-          description: `${transaction.description} (${i + 1}/${newTransaction.installments})`
+          current_installment: i + 1,
+          description: `${transactionData.description} (${i + 1}/${newTransaction.installments})`
         });
       }
-      
-      const updatedData = {
-        ...userData,
-        transactions: [...userData.transactions, ...transactions]
-      };
-      saveData(updatedData);
+
+      const { error } = await supabase
+        .from('transactions')
+        .insert(transactionsToInsert);
+
+      if (error) {
+        toast.error('Erro ao adicionar transação');
+      } else {
+        loadTransactions();
+        toast.success('Transação adicionada com sucesso!');
+      }
     } else {
-      const updatedData = {
-        ...userData,
-        transactions: [...userData.transactions, transaction]
-      };
-      saveData(updatedData);
+      const { error } = await supabase
+        .from('transactions')
+        .insert([transactionData]);
+
+      if (error) {
+        toast.error('Erro ao adicionar transação');
+      } else {
+        loadTransactions();
+        toast.success('Transação adicionada com sucesso!');
+      }
     }
 
     setNewTransaction({
       description: '',
       amount: 0,
       type: 'casual',
-      isRecurrent: false,
+      is_recurrent: false,
       installments: 1,
-      idealDay: userData.idealDay
+      ideal_day: userProfile?.ideal_day || 5
     });
-
-    toast.success('Transação adicionada com sucesso!');
   };
 
-  const deleteTransaction = (id: string) => {
-    const updatedData = {
-      ...userData,
-      transactions: userData.transactions.filter(t => !t.id.startsWith(id.split('-')[0]))
-    };
-    saveData(updatedData);
-    toast.success('Transação removida');
-  };
-
-  const startNewCycle = () => {
-    const { availableBalance } = calculateTotals();
+  const deleteTransaction = async (id: string) => {
+    const baseId = id.split('-')[0];
     
-    if (availableBalance > 0) {
-      const updatedData = {
-        ...userData,
-        totalSaved: userData.totalSaved + availableBalance,
-        transactions: userData.transactions.filter(t => 
-          t.type === 'fixed' || 
-          t.type === 'card' || 
-          !t.date.startsWith(userData.currentCycle)
-        ),
-        currentCycle: new Date().toISOString().slice(0, 7)
-      };
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .like('id', `${baseId}%`);
 
-      // Add recurrent transactions to new cycle
-      const recurrentTransactions = userData.transactions
-        .filter(t => t.isRecurrent && t.type === 'card')
+    if (error) {
+      toast.error('Erro ao remover transação');
+    } else {
+      loadTransactions();
+      toast.success('Transação removida');
+    }
+  };
+
+  const startNewCycle = async () => {
+    if (!user || !userProfile) return;
+
+    const { availableBalance } = calculateTotals();
+    const newCycle = new Date().toISOString().slice(0, 7);
+    
+    const updates: any = {
+      current_cycle: newCycle
+    };
+
+    if (availableBalance > 0) {
+      updates.total_saved = userProfile.total_saved + availableBalance;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error('Erro ao iniciar novo ciclo');
+    } else {
+      // Remove casual transactions from previous cycle
+      await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('type', 'casual')
+        .like('date', `${userProfile.current_cycle}%`);
+
+      // Add recurrent card transactions to new cycle
+      const recurrentTransactions = transactions
+        .filter(t => t.is_recurrent && t.type === 'card')
         .map(t => ({
-          ...t,
-          id: Date.now().toString() + Math.random().toString(),
-          date: updatedData.currentCycle + '-01'
+          user_id: user.id,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          date: newCycle + '-01',
+          is_recurrent: t.is_recurrent,
+          installments: t.installments,
+          current_installment: t.current_installment,
+          ideal_day: t.ideal_day
         }));
 
-      updatedData.transactions = [...updatedData.transactions, ...recurrentTransactions];
-      saveData(updatedData);
-      toast.success('Novo ciclo iniciado!');
-    } else {
-      const updatedData = {
-        ...userData,
-        currentCycle: new Date().toISOString().slice(0, 7)
-      };
-      saveData(updatedData);
+      if (recurrentTransactions.length > 0) {
+        await supabase
+          .from('transactions')
+          .insert(recurrentTransactions);
+      }
+
+      loadUserProfile();
+      loadTransactions();
       toast.success('Novo ciclo iniciado!');
     }
   };
 
-  const setupInitialData = () => {
-    const updatedData = {
-      ...userData,
-      salary: newTransaction.amount,
-      idealDay: newTransaction.idealDay
-    };
-    saveData(updatedData);
-    setIsFirstTime(false);
-    toast.success('Configuração inicial concluída!');
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
   };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-green-600">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const totals = calculateTotals();
 
-  if (isFirstTime) {
+  if (isFirstTime && userProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
         <div className="max-w-md mx-auto pt-8">
@@ -225,7 +343,7 @@ const Index = () => {
                 <Wallet className="h-6 w-6" />
                 Budget Smart Cycle
               </CardTitle>
-              <p className="text-green-100">Configure seus dados iniciais</p>
+              <p className="text-green-100">Bem-vindo, {userProfile.username}!</p>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div>
@@ -234,16 +352,16 @@ const Index = () => {
                   id="salary"
                   type="number"
                   placeholder="0,00"
-                  value={newTransaction.amount || ''}
-                  onChange={(e) => setNewTransaction({...newTransaction, amount: Number(e.target.value)})}
+                  value={setupData.salary || ''}
+                  onChange={(e) => setSetupData({...setupData, salary: Number(e.target.value)})}
                   className="mt-1"
                 />
               </div>
               <div>
                 <Label htmlFor="idealDay">Dia Ideal do Cartão</Label>
                 <Select 
-                  value={newTransaction.idealDay.toString()} 
-                  onValueChange={(value) => setNewTransaction({...newTransaction, idealDay: Number(value)})}
+                  value={setupData.ideal_day.toString()} 
+                  onValueChange={(value) => setSetupData({...setupData, ideal_day: Number(value)})}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -277,6 +395,20 @@ const Index = () => {
               <Wallet className="h-5 w-5" />
               Budget Smart Cycle
             </CardTitle>
+            <div className="flex items-center justify-between text-sm text-green-100">
+              <span className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {userProfile?.username}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-green-100 hover:text-white hover:bg-green-600"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 
@@ -293,7 +425,7 @@ const Index = () => {
           <Card className="border-blue-200">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">
-                R$ {userData.totalSaved.toFixed(2)}
+                R$ {userProfile?.total_saved.toFixed(2)}
               </div>
               <div className="text-sm text-gray-600">Total Guardado</div>
             </CardContent>
@@ -370,13 +502,13 @@ const Index = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="recurrent"
-                        checked={newTransaction.isRecurrent}
-                        onCheckedChange={(checked) => setNewTransaction({...newTransaction, isRecurrent: !!checked})}
+                        checked={newTransaction.is_recurrent}
+                        onCheckedChange={(checked) => setNewTransaction({...newTransaction, is_recurrent: !!checked})}
                       />
                       <Label htmlFor="recurrent">Compra Recorrente</Label>
                     </div>
                     
-                    {!newTransaction.isRecurrent && (
+                    {!newTransaction.is_recurrent && (
                       <div>
                         <Label>Parcelas</Label>
                         <Input
@@ -414,8 +546,8 @@ const Index = () => {
               <CardTitle className="text-lg">Transações do Mês</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
-              {userData.transactions
-                .filter(t => t.date.startsWith(userData.currentCycle))
+              {transactions
+                .filter(t => t.date.startsWith(userProfile?.current_cycle || ''))
                 .map((transaction) => (
                   <div key={transaction.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
@@ -426,7 +558,7 @@ const Index = () => {
                       <span className={`font-medium ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
                       </span>
                       <Button
                         size="sm"
@@ -439,7 +571,7 @@ const Index = () => {
                     </div>
                   </div>
                 ))}
-              {userData.transactions.filter(t => t.date.startsWith(userData.currentCycle)).length === 0 && (
+              {transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || '')).length === 0 && (
                 <div className="text-center text-gray-500 py-4">
                   Nenhuma transação este mês
                 </div>
@@ -461,8 +593,8 @@ const Index = () => {
         {/* Footer Info */}
         <Card className="border-gray-200">
           <CardContent className="p-4 text-center text-sm text-gray-600">
-            <div>Ciclo Atual: {new Date(userData.currentCycle).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
-            <div>Dia Ideal do Cartão: {userData.idealDay}</div>
+            <div>Ciclo Atual: {new Date(userProfile?.current_cycle + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
+            <div>Dia Ideal do Cartão: {userProfile?.ideal_day}</div>
           </CardContent>
         </Card>
       </div>

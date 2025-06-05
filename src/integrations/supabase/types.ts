@@ -9,7 +9,89 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          current_cycle: string | null
+          id: string
+          ideal_day: number | null
+          salary: number | null
+          total_saved: number | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_cycle?: string | null
+          id: string
+          ideal_day?: number | null
+          salary?: number | null
+          total_saved?: number | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          current_cycle?: string | null
+          id?: string
+          ideal_day?: number | null
+          salary?: number | null
+          total_saved?: number | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          current_installment: number | null
+          date: string
+          description: string
+          id: string
+          ideal_day: number | null
+          installments: number | null
+          is_recurrent: boolean | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          current_installment?: number | null
+          date: string
+          description: string
+          id?: string
+          ideal_day?: number | null
+          installments?: number | null
+          is_recurrent?: boolean | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          current_installment?: number | null
+          date?: string
+          description?: string
+          id?: string
+          ideal_day?: number | null
+          installments?: number | null
+          is_recurrent?: boolean | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
