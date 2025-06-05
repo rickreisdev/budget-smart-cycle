@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -105,7 +104,19 @@ const Index = () => {
       console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar transações');
     } else {
-      setTransactions(data || []);
+      // Type-safe mapping to ensure compatibility
+      const typedTransactions: Transaction[] = (data || []).map(item => ({
+        id: item.id,
+        type: item.type as Transaction['type'],
+        description: item.description,
+        amount: Number(item.amount),
+        date: item.date,
+        is_recurrent: item.is_recurrent || false,
+        installments: item.installments || 1,
+        current_installment: item.current_installment || 1,
+        ideal_day: item.ideal_day || undefined
+      }));
+      setTransactions(typedTransactions);
     }
   };
 
