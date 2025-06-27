@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -107,8 +107,13 @@ const Index = () => {
         variant: "destructive",
       });
     } else {
-      setTransactions(data || []);
-      calculateBalance(data || []);
+      // Cast the type to ensure TypeScript compatibility
+      const typedTransactions = (data || []).map(transaction => ({
+        ...transaction,
+        type: transaction.type as 'income' | 'expense'
+      }));
+      setTransactions(typedTransactions);
+      calculateBalance(typedTransactions);
     }
   };
 
