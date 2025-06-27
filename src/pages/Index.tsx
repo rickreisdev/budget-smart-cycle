@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +42,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [visibleTransactions, setVisibleTransactions] = useState(5);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -331,6 +332,16 @@ const Index = () => {
     navigate('/auth');
   };
 
+  // Helper function to get current cycle transactions
+  const getCurrentCycleTransactions = () => {
+    return transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || ''));
+  };
+
+  // Helper function to load more transactions
+  const loadMoreTransactions = () => {
+    setVisibleTransactions(prev => prev + 5);
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
@@ -344,6 +355,9 @@ const Index = () => {
   }
 
   const totals = calculateTotals();
+  const currentCycleTransactions = getCurrentCycleTransactions();
+  const visibleTransactionsList = currentCycleTransactions.slice(0, visibleTransactions);
+  const hasMoreTransactions = currentCycleTransactions.length > visibleTransactions;
 
   if (isFirstTime && userProfile) {
     return (
@@ -555,37 +569,55 @@ const Index = () => {
         {showHistory && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Transações do Mês</CardTitle>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span>Transações do Mês</span>
+                <span className="text-sm font-normal text-gray-500">
+                  {currentCycleTransactions.length} total
+                </span>
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
-              {transactions
-                .filter(t => t.date.startsWith(userProfile?.current_cycle || ''))
-                .map((transaction) => (
-                  <div key={transaction.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{transaction.description}</div>
-                      <div className="text-xs text-gray-500 capitalize">{transaction.type}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteTransaction(transaction.id)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {visibleTransactionsList.map((transaction) => (
+                <div key={transaction.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{transaction.description}</div>
+                    <div className="text-xs text-gray-500 capitalize">{transaction.type}</div>
                   </div>
-                ))}
-              {transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || '')).length === 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className={`font-medium ${
+                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteTransaction(transaction.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {currentCycleTransactions.length === 0 && (
                 <div className="text-center text-gray-500 py-4">
                   Nenhuma transação este mês
+                </div>
+              )}
+              
+              {hasMoreTransactions && (
+                <div className="text-center pt-2">
+                  <Button
+                    onClick={loadMoreTransactions}
+                    variant="outline"
+                    size="sm"
+                    className="text-green-600 border-green-600 hover:bg-green-50"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Ver mais resultados ({currentCycleTransactions.length - visibleTransactions} restantes)
+                  </Button>
                 </div>
               )}
             </CardContent>
