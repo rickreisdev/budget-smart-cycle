@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User } from 'lucide-react';
@@ -591,15 +592,40 @@ const Index = () => {
           </Card>
         )}
 
-        {/* New Cycle Button */}
-        <Button 
-          onClick={startNewCycle}
-          className="w-full bg-blue-600 hover:bg-blue-700 py-3"
-          size="lg"
-        >
-          <DollarSign className="h-5 w-5 mr-2" />
-          Iniciar Novo Ciclo
-        </Button>
+        {/* New Cycle Button with Confirmation */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 py-3"
+              size="lg"
+            >
+              <DollarSign className="h-5 w-5 mr-2" />
+              Iniciar Novo Ciclo
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Novo Ciclo</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja iniciar um novo ciclo? Esta ação irá:
+                <br />
+                • Salvar o saldo atual ({totals.availableBalance > 0 ? `+R$ ${totals.availableBalance.toFixed(2)}` : 'R$ 0,00'}) na sua reserva
+                <br />
+                • Remover todos os gastos avulsos do ciclo atual
+                <br />
+                • Renovar as compras recorrentes do cartão
+                <br /><br />
+                Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={startNewCycle} className="bg-blue-600 hover:bg-blue-700">
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Footer Info */}
         <Card className="border-gray-200">
