@@ -23,6 +23,7 @@ interface Transaction {
   installments?: number;
   current_installment?: number;
   ideal_day?: number;
+  created_at?: string;
 }
 
 interface UserProfile {
@@ -58,6 +59,29 @@ const Index = () => {
     salary: 0,
     ideal_day: 5
   });
+
+  // Function to translate transaction types to Portuguese
+  const getTransactionTypeInPortuguese = (type: Transaction['type']) => {
+    const typeTranslations = {
+      'income': 'Renda Extra',
+      'fixed': 'Gasto Fixo',
+      'card': 'Cartão de Crédito',
+      'casual': 'Gasto Avulso'
+    };
+    return typeTranslations[type];
+  };
+
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -116,7 +140,8 @@ const Index = () => {
         is_recurrent: item.is_recurrent || false,
         installments: item.installments || 1,
         current_installment: item.current_installment || 1,
-        ideal_day: item.ideal_day || undefined
+        ideal_day: item.ideal_day || undefined,
+        created_at: item.created_at
       }));
       setTransactions(typedTransactions);
     }
@@ -578,22 +603,31 @@ const Index = () => {
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               {visibleTransactionsList.map((transaction) => (
-                <div key={transaction.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
                   <div className="flex-1">
                     <div className="font-medium text-sm">{transaction.description}</div>
-                    <div className="text-xs text-gray-500 capitalize">{transaction.type}</div>
+                    <div className="text-xs text-gray-500">
+                      {getTransactionTypeInPortuguese(transaction.type)}
+                    </div>
+                    {transaction.created_at && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        Adicionado em: {formatDate(transaction.created_at)}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
-                    </span>
+                  <div className="flex items-center gap-2 ml-2">
+                    <div className="text-right">
+                      <span className={`font-medium text-sm ${
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
+                      </span>
+                    </div>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => deleteTransaction(transaction.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
