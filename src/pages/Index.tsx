@@ -1,23 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, Plus, TrendingUp, TrendingDown, Calendar, DollarSign } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/dialog";
+import { Wallet } from 'lucide-react';
+import { BalanceCards } from '@/components/BalanceCards';
+import { TransactionForm } from '@/components/TransactionForm';
+import { TransactionList } from '@/components/TransactionList';
+import { NewCycleDialog } from '@/components/NewCycleDialog';
 
 interface Profile {
   id: string;
@@ -52,9 +42,6 @@ const Index = () => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [isRecurrent, setIsRecurrent] = useState(false);
-  const [installments, setInstallments] = useState(1);
-  const [idealDay, setIdealDay] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
   const [displayedTransactions, setDisplayedTransactions] = useState(TRANSACTIONS_PER_PAGE);
 
@@ -90,7 +77,7 @@ const Index = () => {
   const fetchTransactions = async () => {
     if (!user) return;
 
-    const currentCycle = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const currentCycle = new Date().toISOString().slice(0, 7);
     
     const { data, error } = await supabase
       .from('transactions')
@@ -107,8 +94,8 @@ const Index = () => {
         variant: "destructive",
       });
     } else {
-      setTransactions(data || []);
-      calculateBalance(data || []);
+      setTransactions(data as Transaction[] || []);
+      calculateBalance(data as Transaction[] || []);
     }
   };
 
@@ -141,10 +128,9 @@ const Index = () => {
         type,
         description,
         date: currentDate,
-        is_recurrent: isRecurrent,
-        installments,
-        current_installment: 1,
-        ideal_day: idealDay
+        is_recurrent: false,
+        installments: 1,
+        current_installment: 1
       });
 
     if (error) {
@@ -163,9 +149,6 @@ const Index = () => {
       setAmount('');
       setDescription('');
       setType('expense');
-      setIsRecurrent(false);
-      setInstallments(1);
-      setIdealDay(undefined);
       
       fetchTransactions();
     }
@@ -214,8 +197,6 @@ const Index = () => {
     setDisplayedTransactions(prev => prev + TRANSACTIONS_PER_PAGE);
   };
 
-  const hasMoreTransactions = displayedTransactions < transactions.length;
-
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">Carregando...</div>;
   }
@@ -237,168 +218,31 @@ const Index = () => {
         </div>
 
         {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saldo Atual</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                R$ {balance.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Economizado</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                R$ {profile.total_saved.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ciclo Atual</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-800">
-                {profile.current_cycle}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <BalanceCards balance={balance} profile={profile} />
 
         {/* Add Transaction Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Nova Transação
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Valor</label>
-                <Input
-                  type="number"
-                  placeholder="0,00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Descrição</label>
-                <Input
-                  placeholder="Descrição da transação"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant={type === 'income' ? 'default' : 'outline'}
-                onClick={() => setType('income')}
-                className="flex-1"
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Receita
-              </Button>
-              <Button
-                variant={type === 'expense' ? 'default' : 'outline'}
-                onClick={() => setType('expense')}
-                className="flex-1"
-              >
-                <TrendingDown className="h-4 w-4 mr-2" />
-                Despesa
-              </Button>
-            </div>
-            
-            <Button onClick={addTransaction} className="w-full">
-              Adicionar Transação
-            </Button>
-          </CardContent>
-        </Card>
+        <TransactionForm
+          amount={amount}
+          description={description}
+          type={type}
+          onAmountChange={setAmount}
+          onDescriptionChange={setDescription}
+          onTypeChange={setType}
+          onSubmit={addTransaction}
+        />
 
         {/* Transaction History */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico de Transações</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {transactions.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nenhuma transação encontrada</p>
-            ) : (
-              <div className="space-y-2">
-                {transactions.slice(0, displayedTransactions).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{transaction.description}</span>
-                        {transaction.is_recurrent && (
-                          <Badge variant="secondary">Recorrente</Badge>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-500">{transaction.date}</span>
-                    </div>
-                    <div className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2)}
-                    </div>
-                  </div>
-                ))}
-                
-                {hasMoreTransactions && (
-                  <div className="text-center pt-4">
-                    <Button variant="outline" onClick={loadMoreTransactions}>
-                      Ver mais resultados ({transactions.length - displayedTransactions} restantes)
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <TransactionList
+          transactions={transactions}
+          displayedTransactions={displayedTransactions}
+          onLoadMore={loadMoreTransactions}
+        />
 
         {/* New Cycle Button */}
-        <Card>
-          <CardContent className="pt-6">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="w-full" variant="destructive">
-                  Iniciar Novo Ciclo
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmar Início de Novo Ciclo</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta ação irá:
-                    <br />• Salvar o saldo positivo atual (R$ {Math.max(0, balance).toFixed(2)}) no total economizado
-                    <br />• Apagar todas as despesas casuais do ciclo atual
-                    <br />• Renovar as compras recorrentes do cartão
-                    <br /><br />
-                    Tem certeza que deseja continuar?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={startNewCycle}>
-                    Sim, iniciar novo ciclo
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardContent>
-        </Card>
+        <NewCycleDialog
+          balance={balance}
+          onStartNewCycle={startNewCycle}
+        />
       </div>
     </div>
   );
