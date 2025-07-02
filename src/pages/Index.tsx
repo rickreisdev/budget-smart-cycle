@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -392,6 +392,42 @@ const Index = () => {
     }
   };
 
+  const resetAllData = async () => {
+    if (!user || !userProfile) return;
+
+    try {
+      // Delete all transactions
+      const { error: transactionsError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (transactionsError) throw transactionsError;
+
+      // Reset profile to default values
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          salary: 0,
+          ideal_day: 5,
+          total_saved: 0,
+          current_cycle: new Date().toISOString().slice(0, 7)
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Reload data
+      await loadUserProfile();
+      await loadTransactions();
+      
+      toast.success('Todos os dados foram resetados com sucesso!');
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      toast.error('Erro ao resetar os dados');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
@@ -713,6 +749,51 @@ const Index = () => {
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={startNewCycle} className="bg-blue-600 hover:bg-blue-700">
                 Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Reset Data Button with Confirmation */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="destructive"
+              className="w-full py-3"
+              size="lg"
+            >
+              <RotateCcw className="h-5 w-5 mr-2" />
+              Resetar Todos os Dados
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>⚠️ Confirmar Reset Completo</AlertDialogTitle>
+              <AlertDialogDescription>
+                <strong>ATENÇÃO:</strong> Esta ação irá apagar PERMANENTEMENTE todos os seus dados:
+                <br /><br />
+                • Todas as transações do histórico
+                <br />
+                • Valor do salário (voltará para R$ 0,00)
+                <br />
+                • Total guardado (voltará para R$ 0,00)
+                <br />
+                • Dia ideal do cartão (voltará para dia 5)
+                <br />
+                • Ciclo atual será reiniciado
+                <br /><br />
+                <strong>Esta ação NÃO PODE ser desfeita!</strong>
+                <br /><br />
+                Tem certeza que deseja continuar?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={resetAllData}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Sim, Resetar Tudo
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
