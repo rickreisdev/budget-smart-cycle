@@ -63,6 +63,11 @@ const Index = () => {
 
   const [editIdealDay, setEditIdealDay] = useState(5);
 
+  // Function to format currency with Brazilian standard (comma as decimal separator)
+  const formatCurrency = (value: number) => {
+    return value.toFixed(2).replace('.', ',');
+  };
+
   // Function to translate transaction types to Portuguese
   const getTransactionTypeInPortuguese = (type: Transaction['type']) => {
     const typeTranslations = {
@@ -529,7 +534,7 @@ const Index = () => {
           <Card className="border-green-200">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-600">
-                R$ {totals.availableBalance.toFixed(2)}
+                R$ {formatCurrency(totals.availableBalance)}
               </div>
               <div className="text-sm text-gray-600">Saldo Disponível</div>
             </CardContent>
@@ -537,7 +542,7 @@ const Index = () => {
           <Card className="border-blue-200">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">
-                R$ {userProfile?.total_saved.toFixed(2)}
+                R$ {formatCurrency(userProfile?.total_saved || 0)}
               </div>
               <div className="text-sm text-gray-600">Total Guardado</div>
             </CardContent>
@@ -550,11 +555,11 @@ const Index = () => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Renda:</span>
-                <span className="text-green-600 font-medium">R$ {totals.totalIncome.toFixed(2)}</span>
+                <span className="text-green-600 font-medium">R$ {formatCurrency(totals.totalIncome)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Gastos Totais:</span>
-                <span className="text-red-600 font-medium">R$ {totals.totalExpenses.toFixed(2)}</span>
+                <span className="text-red-600 font-medium">R$ {formatCurrency(totals.totalExpenses)}</span>
               </div>
             </div>
           </CardContent>
@@ -681,7 +686,7 @@ const Index = () => {
                       <span className={`font-medium text-sm ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}R$ {Number(transaction.amount).toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
                       </span>
                     </div>
                     <Button
@@ -736,7 +741,7 @@ const Index = () => {
               <AlertDialogDescription>
                 Tem certeza que deseja iniciar um novo ciclo? Esta ação irá:
                 <br />
-                • Salvar o saldo atual ({totals.availableBalance > 0 ? `+R$ ${totals.availableBalance.toFixed(2)}` : 'R$ 0,00'}) na sua reserva
+                • Salvar o saldo atual ({totals.availableBalance > 0 ? `+R$ ${formatCurrency(totals.availableBalance)}` : 'R$ 0,00'}) na sua reserva
                 <br />
                 • Remover todos os gastos avulsos do ciclo atual
                 <br />
