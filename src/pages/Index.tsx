@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,6 +44,7 @@ const Index = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [visibleTransactions, setVisibleTransactions] = useState(5);
+  const [showEditIdealDay, setShowEditIdealDay] = useState(false);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -59,6 +60,8 @@ const Index = () => {
     salary: 0,
     ideal_day: 5
   });
+
+  const [editIdealDay, setEditIdealDay] = useState(5);
 
   // Function to translate transaction types to Portuguese
   const getTransactionTypeInPortuguese = (type: Transaction['type']) => {
@@ -365,6 +368,28 @@ const Index = () => {
   // Helper function to load more transactions
   const loadMoreTransactions = () => {
     setVisibleTransactions(prev => prev + 5);
+  };
+
+  const updateIdealDay = async () => {
+    if (!user || !userProfile) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        ideal_day: editIdealDay
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar dia ideal');
+    } else {
+      setUserProfile({
+        ...userProfile,
+        ideal_day: editIdealDay
+      });
+      setShowEditIdealDay(false);
+      toast.success('Dia ideal atualizado com sucesso!');
+    }
   };
 
   if (authLoading || loading) {
@@ -697,7 +722,61 @@ const Index = () => {
         <Card className="border-gray-200">
           <CardContent className="p-4 text-center text-sm text-gray-600">
             <div>Ciclo Atual: {new Date(userProfile?.current_cycle + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
-            <div>Dia Ideal do Cartão: {userProfile?.ideal_day}</div>
+            <div className="flex items-center justify-center gap-2">
+              <span>Dia Ideal do Cartão: {userProfile?.ideal_day}</span>
+              <Dialog open={showEditIdealDay} onOpenChange={setShowEditIdealDay}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                    onClick={() => {
+                      setEditIdealDay(userProfile?.ideal_day || 5);
+                      setShowEditIdealDay(true);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Editar Dia Ideal do Cartão</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Dia Ideal</Label>
+                      <Select 
+                        value={editIdealDay.toString()} 
+                        onValueChange={(value) => setEditIdealDay(Number(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({length: 31}, (_, i) => (
+                            <SelectItem key={i + 1} value={(i + 1).toString()}>
+                              Dia {i + 1}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowEditIdealDay(false)}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={updateIdealDay} className="flex-1">
+                        Salvar
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardContent>
         </Card>
       </div>
