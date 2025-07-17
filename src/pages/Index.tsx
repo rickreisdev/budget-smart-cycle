@@ -241,11 +241,14 @@ const Index = () => {
     };
 
     if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
-      // Handle installments
+      // Handle installments - each installment should be in a different month
       const transactionsToInsert = [];
+      const currentDate = new Date(userProfile?.current_cycle + '-01');
+      
       for (let i = 0; i < newTransaction.installments; i++) {
-        const installmentDate = new Date(userProfile?.current_cycle + '-01');
+        const installmentDate = new Date(currentDate);
         installmentDate.setMonth(installmentDate.getMonth() + i);
+        
         transactionsToInsert.push({
           ...transactionData,
           date: installmentDate.toISOString().slice(0, 7) + '-01',
@@ -259,10 +262,11 @@ const Index = () => {
         .insert(transactionsToInsert);
 
       if (error) {
-        toast.error('Erro ao adicionar transação');
+        console.error('Error adding installment transactions:', error);
+        toast.error('Erro ao adicionar transação parcelada');
       } else {
         loadTransactions();
-        toast.success('Transação adicionada com sucesso!');
+        toast.success('Transação parcelada adicionada com sucesso!');
       }
     } else {
       const { error } = await supabase
@@ -270,6 +274,7 @@ const Index = () => {
         .insert([transactionData]);
 
       if (error) {
+        console.error('Error adding transaction:', error);
         toast.error('Erro ao adicionar transação');
       } else {
         loadTransactions();
@@ -288,18 +293,50 @@ const Index = () => {
   };
 
   const deleteTransaction = async (id: string) => {
-    const baseId = id.split('-')[0];
-    
-    const { error } = await supabase
-      .from('transactions')
-      .delete()
-      .like('id', `${baseId}%`);
+    // Get the transaction to check if it's part of installments
+    const transactionToDelete = transactions.find(t => t.id === id);
+    if (!transactionToDelete) {
+      toast.error('Transação não encontrada');
+      return;
+    }
 
-    if (error) {
-      toast.error('Erro ao remover transação');
-    } else {
+    try {
+      // If it's a card transaction with installments, we need to find and delete all related installments
+      if (transactionToDelete.type === 'card' && transactionToDelete.installments && transactionToDelete.installments > 1) {
+        // Extract the base description (remove the installment part)
+        const baseDescription = transactionToDelete.description.replace(/ \(\d+\/\d+\)$/, '');
+        
+        // Delete all transactions with the same base description, amount, and type
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('user_id', user?.id)
+          .eq('type', 'card')
+          .eq('amount', transactionToDelete.amount)
+          .like('description', `${baseDescription}%`);
+
+        if (error) {
+          console.error('Error deleting installment transactions:', error);
+          throw error;
+        }
+      } else {
+        // Delete single transaction
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error deleting transaction:', error);
+          throw error;
+        }
+      }
+
       loadTransactions();
-      toast.success('Transação removida');
+      toast.success('Transação removida com sucesso');
+    } catch (error) {
+      console.error('Error in deleteTransaction:', error);
+      toast.error('Erro ao remover transação');
     }
   };
 
