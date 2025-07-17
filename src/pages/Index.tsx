@@ -245,10 +245,17 @@ const Index = () => {
       const transactionsToInsert = [];
       const baseDate = new Date(userProfile?.current_cycle + '-01');
       
+      console.log('Base date:', baseDate);
+      console.log('Current cycle:', userProfile?.current_cycle);
+      console.log('Number of installments:', newTransaction.installments);
+      
       for (let i = 0; i < newTransaction.installments; i++) {
-        // Create a new date for each installment, adding i months to the base date
+        // The first installment (i=0) should be in the current month
+        // The second installment (i=1) should be in the next month, and so on
         const installmentDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
         const dateString = installmentDate.toISOString().slice(0, 7) + '-01';
+        
+        console.log(`Installment ${i + 1}: Date = ${dateString}`);
         
         transactionsToInsert.push({
           ...transactionData,
@@ -257,6 +264,8 @@ const Index = () => {
           description: `${transactionData.description} (${i + 1}/${newTransaction.installments})`
         });
       }
+
+      console.log('Transactions to insert:', transactionsToInsert);
 
       const { error } = await supabase
         .from('transactions')
@@ -839,8 +848,7 @@ const Index = () => {
                 Sim, Resetar Tudo
               </AlertDialogAction>
             </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          </AlertDialog>
 
         {/* Footer Info */}
         <Card className="border-gray-200">
