@@ -243,15 +243,16 @@ const Index = () => {
     if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
       // Handle installments - each installment should be in a different month
       const transactionsToInsert = [];
-      const currentDate = new Date(userProfile?.current_cycle + '-01');
+      const baseDate = new Date(userProfile?.current_cycle + '-01');
       
       for (let i = 0; i < newTransaction.installments; i++) {
-        const installmentDate = new Date(currentDate);
-        installmentDate.setMonth(installmentDate.getMonth() + i);
+        // Create a new date for each installment, adding i months to the base date
+        const installmentDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
+        const dateString = installmentDate.toISOString().slice(0, 7) + '-01';
         
         transactionsToInsert.push({
           ...transactionData,
-          date: installmentDate.toISOString().slice(0, 7) + '-01',
+          date: dateString,
           current_installment: i + 1,
           description: `${transactionData.description} (${i + 1}/${newTransaction.installments})`
         });
