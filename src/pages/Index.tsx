@@ -45,6 +45,7 @@ const Index = () => {
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [visibleTransactions, setVisibleTransactions] = useState(5);
   const [showEditIdealDay, setShowEditIdealDay] = useState(false);
+  const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -281,6 +282,7 @@ const Index = () => {
       if (error) {
         console.error('Error adding installment transactions:', error);
         toast.error('Erro ao adicionar transação parcelada');
+        return;
       } else {
         loadTransactions();
         toast.success('Transação parcelada adicionada com sucesso!');
@@ -293,12 +295,14 @@ const Index = () => {
       if (error) {
         console.error('Error adding transaction:', error);
         toast.error('Erro ao adicionar transação');
+        return;
       } else {
         loadTransactions();
         toast.success('Transação adicionada com sucesso!');
       }
     }
 
+    // Reset form and close dialog
     setNewTransaction({
       description: '',
       amount: 0,
@@ -307,6 +311,7 @@ const Index = () => {
       installments: 1,
       ideal_day: userProfile?.ideal_day || 5
     });
+    setShowAddTransactionDialog(false);
   };
 
   const deleteTransaction = async (id: string) => {
@@ -621,7 +626,7 @@ const Index = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
-          <Dialog>
+          <Dialog open={showAddTransactionDialog} onOpenChange={setShowAddTransactionDialog}>
             <DialogTrigger asChild>
               <Button className="bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
