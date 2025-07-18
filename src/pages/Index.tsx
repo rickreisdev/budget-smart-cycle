@@ -243,19 +243,26 @@ const Index = () => {
     if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
       // Handle installments - each installment should be in a different month
       const transactionsToInsert = [];
-      const baseDate = new Date(userProfile?.current_cycle + '-01');
       
-      console.log('Base date:', baseDate);
+      // Parse the current cycle to get year and month
+      const [currentYear, currentMonth] = (userProfile?.current_cycle || '').split('-').map(Number);
+      
       console.log('Current cycle:', userProfile?.current_cycle);
+      console.log('Parsed year:', currentYear, 'month:', currentMonth);
       console.log('Number of installments:', newTransaction.installments);
       
       for (let i = 0; i < newTransaction.installments; i++) {
-        // The first installment (i=0) should be in the current month
-        // The second installment (i=1) should be in the next month, and so on
-        const installmentDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
-        const dateString = installmentDate.toISOString().slice(0, 7) + '-01';
+        // Calculate the date for each installment
+        // First installment (i=0) should be in current month
+        // Second installment (i=1) should be in next month, etc.
+        const targetMonth = currentMonth + i;
+        const targetYear = currentYear + Math.floor((targetMonth - 1) / 12);
+        const finalMonth = ((targetMonth - 1) % 12) + 1;
         
-        console.log(`Installment ${i + 1}: Date = ${dateString}`);
+        // Format the date string
+        const dateString = `${targetYear}-${String(finalMonth).padStart(2, '0')}-01`;
+        
+        console.log(`Installment ${i + 1}: Target month = ${targetMonth}, Final year = ${targetYear}, Final month = ${finalMonth}, Date = ${dateString}`);
         
         transactionsToInsert.push({
           ...transactionData,
