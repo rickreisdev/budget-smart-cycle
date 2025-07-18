@@ -848,7 +848,8 @@ const Index = () => {
                 Sim, Resetar Tudo
               </AlertDialogAction>
             </AlertDialogFooter>
-          </AlertDialog>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Footer Info */}
         <Card className="border-gray-200">
