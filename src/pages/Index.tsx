@@ -46,6 +46,7 @@ const Index = () => {
   const [visibleTransactions, setVisibleTransactions] = useState(5);
   const [showEditIdealDay, setShowEditIdealDay] = useState(false);
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -751,7 +752,7 @@ const Index = () => {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => deleteTransaction(transaction.id)}
+                      onClick={() => setTransactionToDelete(transaction.id)}
                       className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -782,6 +783,34 @@ const Index = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Delete Transaction Confirmation */}
+        <AlertDialog open={!!transactionToDelete} onOpenChange={() => setTransactionToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setTransactionToDelete(null)}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (transactionToDelete) {
+                    deleteTransaction(transactionToDelete);
+                    setTransactionToDelete(null);
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* New Cycle Button with Confirmation */}
         <AlertDialog>
