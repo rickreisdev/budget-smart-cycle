@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,6 +47,7 @@ const Index = () => {
   const [showEditIdealDay, setShowEditIdealDay] = useState(false);
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -56,6 +57,13 @@ const Index = () => {
     is_recurrent: false,
     installments: 1,
     ideal_day: 5
+  });
+
+  const [editTransaction, setEditTransaction] = useState({
+    description: '',
+    amount: 0,
+    type: 'casual' as Transaction['type'],
+    installments: 1
   });
 
   const [setupData, setSetupData] = useState({
@@ -360,6 +368,113 @@ const Index = () => {
     } catch (error) {
       console.error('Error in deleteTransaction:', error);
       toast.error('Erro ao remover transação');
+    }
+  };
+
+  const updateTransaction = async () => {
+    if (!editingTransaction || !editTransaction.description || editTransaction.amount <= 0) {
+      toast.error('Preencha todos os campos corretamente');
+      return;
+    }
+
+    try {
+      // Check if it's a card transaction with installments
+      if (editingTransaction.type === 'card' && editingTransaction.installments && editingTransaction.installments > 1) {
+        // Extract the base description (remove the installment part)
+        const baseDescription = editingTransaction.description.replace(/ \(\d+\/\d+\)$/, '');
+        
+        // If changing installment count, we need to handle this specially
+        if (editTransaction.installments !== editingTransaction.installments) {
+          // Delete existing installments
+          await supabase
+            .from('transactions')
+            .delete()
+            .eq('user_id', user?.id)
+            .eq('type', 'card')
+            .eq('amount', editingTransaction.amount)
+            .like('description', `${baseDescription}%`);
+
+          // Create new installments with the new count
+          const transactionsToInsert = [];
+          const [currentYear, currentMonth] = (userProfile?.current_cycle || '').split('-').map(Number);
+          
+          for (let i = 0; i < editTransaction.installments; i++) {
+            const targetMonth = currentMonth + i;
+            const targetYear = currentYear + Math.floor((targetMonth - 1) / 12);
+            const finalMonth = ((targetMonth - 1) % 12) + 1;
+            const dateString = `${targetYear}-${String(finalMonth).padStart(2, '0')}-01`;
+            
+            transactionsToInsert.push({
+              user_id: user?.id,
+              type: editTransaction.type,
+              description: `${editTransaction.description} (${i + 1}/${editTransaction.installments})`,
+              amount: editTransaction.amount,
+              date: dateString,
+              is_recurrent: false,
+              installments: editTransaction.installments,
+              current_installment: i + 1,
+              ideal_day: editingTransaction.ideal_day
+            });
+          }
+
+          const { error } = await supabase
+            .from('transactions')
+            .insert(transactionsToInsert);
+
+          if (error) throw error;
+        } else {
+          // Update all related installments with the same base description
+          const { error } = await supabase
+            .from('transactions')
+            .update({
+              description: editTransaction.description,
+              amount: editTransaction.amount,
+              type: editTransaction.type
+            })
+            .eq('user_id', user?.id)
+            .eq('type', 'card')
+            .eq('amount', editingTransaction.amount)
+            .like('description', `${baseDescription}%`);
+
+          if (error) throw error;
+
+          // Update descriptions to include installment info
+          const relatedTransactions = transactions.filter(t => 
+            t.type === 'card' && 
+            t.description.includes(baseDescription) &&
+            t.amount === editingTransaction.amount
+          );
+
+          for (let i = 0; i < relatedTransactions.length; i++) {
+            const transaction = relatedTransactions[i];
+            await supabase
+              .from('transactions')
+              .update({
+                description: `${editTransaction.description} (${i + 1}/${editTransaction.installments})`
+              })
+              .eq('id', transaction.id);
+          }
+        }
+      } else {
+        // Update single transaction
+        const { error } = await supabase
+          .from('transactions')
+          .update({
+            description: editTransaction.description,
+            amount: editTransaction.amount,
+            type: editTransaction.type
+          })
+          .eq('id', editingTransaction.id);
+
+        if (error) throw error;
+      }
+
+      loadTransactions();
+      setEditingTransaction(null);
+      toast.success('Transação atualizada com sucesso!');
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast.error('Erro ao atualizar transação');
     }
   };
 
@@ -749,14 +864,32 @@ const Index = () => {
                         {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
                       </span>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setTransactionToDelete(transaction.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditingTransaction(transaction);
+                          setEditTransaction({
+                            description: transaction.description.replace(/ \(\d+\/\d+\)$/, ''),
+                            amount: Number(transaction.amount),
+                            type: transaction.type,
+                            installments: transaction.installments || 1
+                          });
+                        }}
+                        className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setTransactionToDelete(transaction.id)}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -891,6 +1024,76 @@ const Index = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Edit Transaction Dialog */}
+        <Dialog open={!!editingTransaction} onOpenChange={() => setEditingTransaction(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Editar Transação</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Tipo</Label>
+                <Select 
+                  value={editTransaction.type} 
+                  onValueChange={(value: Transaction['type']) => setEditTransaction({...editTransaction, type: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Renda Extra</SelectItem>
+                    <SelectItem value="fixed">Gasto Fixo</SelectItem>
+                    <SelectItem value="card">Cartão de Crédito</SelectItem>
+                    <SelectItem value="casual">Gasto Avulso</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Input
+                  value={editTransaction.description}
+                  onChange={(e) => setEditTransaction({...editTransaction, description: e.target.value})}
+                  placeholder="Ex: Supermercado"
+                />
+              </div>
+              <div>
+                <Label>Valor (R$)</Label>
+                <Input
+                  type="number"
+                  value={editTransaction.amount || ''}
+                  onChange={(e) => setEditTransaction({...editTransaction, amount: Number(e.target.value)})}
+                  placeholder="0,00"
+                />
+              </div>
+              
+              {editTransaction.type === 'card' && editingTransaction && editingTransaction.installments && editingTransaction.installments > 1 && (
+                <div>
+                  <Label>Parcelas</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={editTransaction.installments}
+                    onChange={(e) => setEditTransaction({...editTransaction, installments: Number(e.target.value)})}
+                  />
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingTransaction(null)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={updateTransaction} className="flex-1">
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Footer Info */}
         <Card className="border-gray-200">
