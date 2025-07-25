@@ -704,6 +704,44 @@ const Index = () => {
           </CardHeader>
         </Card>
 
+        {/* Navigation Menu */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/instalment-purchases')}
+                className="flex flex-col items-center p-3 h-auto"
+              >
+                <CreditCard className="h-4 w-4 mb-1" />
+                <span className="text-xs">Parceladas</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/recurring-purchases')}
+                className="flex flex-col items-center p-3 h-auto"
+              >
+                <RotateCcw className="h-4 w-4 mb-1" />
+                <span className="text-xs">Recorrentes</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/fixed-expenses')}
+                className="flex flex-col items-center p-3 h-auto"
+              >
+                <Wallet className="h-4 w-4 mb-1" />
+                <span className="text-xs">Fixos</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Balance Overview */}
         <div className="grid grid-cols-2 gap-3">
           <Card className="border-green-200">
