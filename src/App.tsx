@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import InstalmentPurchases from "./pages/InstalmentPurchases";
 import RecurringPurchases from "./pages/RecurringPurchases";
 import FixedExpenses from "./pages/FixedExpenses";
+import Income from "./pages/Income";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +25,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/instalment-purchases" element={<InstalmentPurchases />} />
-            <Route path="/recurring-purchases" element={<RecurringPurchases />} />
-            <Route path="/fixed-expenses" element={<FixedExpenses />} />
+          <Route path="/instalment-purchases" element={<InstalmentPurchases />} />
+          <Route path="/recurring-purchases" element={<RecurringPurchases />} />
+          <Route path="/fixed-expenses" element={<FixedExpenses />} />
+          <Route path="/income" element={<Income />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

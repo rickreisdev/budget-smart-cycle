@@ -710,7 +710,16 @@ const Index = () => {
             <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/income')}
+                className="flex flex-col items-center p-3 h-auto"
+              >
+                <TrendingUp className="h-4 w-4 mb-1" />
+                <span className="text-xs">Rendas</span>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
