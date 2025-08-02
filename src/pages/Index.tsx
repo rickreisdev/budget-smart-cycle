@@ -57,7 +57,8 @@ const Index = () => {
     type: 'casual' as Transaction['type'],
     is_recurrent: false,
     installments: 1,
-    ideal_day: 5
+    ideal_day: 5,
+    totalAmount: 0 // Valor total para compras parceladas
   });
 
   const [editTransaction, setEditTransaction] = useState({
@@ -320,7 +321,8 @@ const Index = () => {
       type: 'casual',
       is_recurrent: false,
       installments: 1,
-      ideal_day: userProfile?.ideal_day || 5
+      ideal_day: userProfile?.ideal_day || 5,
+      totalAmount: 0
     });
     setShowAddTransactionDialog(false);
   };
@@ -848,15 +850,57 @@ const Index = () => {
                     placeholder="Ex: Supermercado"
                   />
                 </div>
-                <div>
-                  <Label>Valor (R$)</Label>
-                  <Input
-                    type="number"
-                    value={newTransaction.amount || ''}
-                    onChange={(e) => setNewTransaction({...newTransaction, amount: Number(e.target.value)})}
-                    placeholder="0,00"
-                  />
-                </div>
+                {newTransaction.type === 'card' && !newTransaction.is_recurrent && newTransaction.installments > 1 ? (
+                  <>
+                    <div>
+                      <Label>Valor Total (R$)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newTransaction.totalAmount || ''}
+                        onChange={(e) => {
+                          const totalAmount = Number(e.target.value);
+                          const amountPerInstallment = totalAmount / newTransaction.installments;
+                          setNewTransaction({
+                            ...newTransaction, 
+                            totalAmount: totalAmount,
+                            amount: Math.round(amountPerInstallment * 100) / 100
+                          });
+                        }}
+                        placeholder="0,00"
+                      />
+                    </div>
+                    <div>
+                      <Label>Valor por Parcela (R$)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newTransaction.amount || ''}
+                        onChange={(e) => {
+                          const amountPerInstallment = Number(e.target.value);
+                          const totalAmount = amountPerInstallment * newTransaction.installments;
+                          setNewTransaction({
+                            ...newTransaction, 
+                            amount: amountPerInstallment,
+                            totalAmount: Math.round(totalAmount * 100) / 100
+                          });
+                        }}
+                        placeholder="0,00"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <Label>Valor (R$)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={newTransaction.amount || ''}
+                      onChange={(e) => setNewTransaction({...newTransaction, amount: Number(e.target.value)})}
+                      placeholder="0,00"
+                    />
+                  </div>
+                )}
                 
                 {newTransaction.type === 'card' && (
                   <>
@@ -869,17 +913,30 @@ const Index = () => {
                       <Label htmlFor="recurrent">Compra Recorrente</Label>
                     </div>
                     
-                    {!newTransaction.is_recurrent && (
-                      <div>
-                        <Label>Parcelas</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={newTransaction.installments}
-                          onChange={(e) => setNewTransaction({...newTransaction, installments: Number(e.target.value)})}
-                        />
-                      </div>
-                    )}
+                     {!newTransaction.is_recurrent && (
+                       <div>
+                         <Label>Parcelas</Label>
+                         <Input
+                           type="number"
+                           min="1"
+                           value={newTransaction.installments}
+                           onChange={(e) => {
+                             const installments = Number(e.target.value);
+                             // Se já tem um valor total definido, recalcula o valor por parcela
+                             if (newTransaction.totalAmount > 0) {
+                               const amountPerInstallment = newTransaction.totalAmount / installments;
+                               setNewTransaction({
+                                 ...newTransaction, 
+                                 installments: installments,
+                                 amount: Math.round(amountPerInstallment * 100) / 100
+                               });
+                             } else {
+                               setNewTransaction({...newTransaction, installments: installments});
+                             }
+                           }}
+                         />
+                       </div>
+                     )}
                   </>
                 )}
                 
