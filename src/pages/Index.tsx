@@ -633,7 +633,7 @@ const Index = () => {
             <CardHeader className="text-center bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
               <CardTitle className="text-2xl flex items-center justify-center gap-2">
                 <Wallet className="h-6 w-6" />
-                Budget Smart Cycle
+                Budget Control
               </CardTitle>
               <p className="text-green-100">Bem-vindo, {userProfile.username}!</p>
             </CardHeader>
@@ -685,7 +685,7 @@ const Index = () => {
           <CardHeader className="text-center bg-gradient-to-r from-green-500 to-emerald-600 text-white">
             <CardTitle className="text-xl flex items-center justify-center gap-2">
               <Wallet className="h-5 w-5" />
-              Budget Smart Cycle
+              Budget Control
             </CardTitle>
             <div className="flex items-center justify-between text-sm text-green-100">
               <span className="flex items-center gap-1">
