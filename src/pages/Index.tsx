@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2 } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,6 +45,7 @@ const Index = () => {
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [visibleTransactions, setVisibleTransactions] = useState(5);
   const [showEditIdealDay, setShowEditIdealDay] = useState(false);
+  const [showEditCycle, setShowEditCycle] = useState(false);
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -72,6 +73,7 @@ const Index = () => {
   });
 
   const [editIdealDay, setEditIdealDay] = useState(5);
+  const [editCycle, setEditCycle] = useState('');
 
   // Function to format currency with Brazilian standard (comma as decimal separator)
   const formatCurrency = (value: number) => {
@@ -569,6 +571,28 @@ const Index = () => {
       });
       setShowEditIdealDay(false);
       toast.success('Dia ideal atualizado com sucesso!');
+    }
+  };
+
+  const updateCycle = async () => {
+    if (!user || !userProfile || !editCycle) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        current_cycle: editCycle
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar ciclo');
+    } else {
+      setUserProfile({
+        ...userProfile,
+        current_cycle: editCycle
+      });
+      setShowEditCycle(false);
+      toast.success('Ciclo atualizado com sucesso!');
     }
   };
 
@@ -1145,7 +1169,52 @@ const Index = () => {
         {/* Footer Info */}
         <Card className="border-gray-200">
           <CardContent className="p-4 text-center text-sm text-gray-600">
-            <div>Ciclo Atual: {new Date(userProfile?.current_cycle + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
+            <div className="flex items-center justify-center gap-2">
+              <span>Ciclo Atual: {new Date(userProfile?.current_cycle + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+              <Dialog open={showEditCycle} onOpenChange={setShowEditCycle}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                    onClick={() => {
+                      setEditCycle(userProfile?.current_cycle || '');
+                      setShowEditCycle(true);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Alterar Mês do Ciclo</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Selecionar Mês/Ano</Label>
+                      <Input
+                        type="month"
+                        value={editCycle}
+                        onChange={(e) => setEditCycle(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowEditCycle(false)}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={updateCycle} className="flex-1">
+                        Salvar
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="flex items-center justify-center gap-2">
               <span>Dia Ideal do Cartão: {userProfile?.ideal_day}</span>
               <Dialog open={showEditIdealDay} onOpenChange={setShowEditIdealDay}>
