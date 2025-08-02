@@ -587,10 +587,8 @@ const Index = () => {
     if (error) {
       toast.error('Erro ao atualizar ciclo');
     } else {
-      setUserProfile({
-        ...userProfile,
-        current_cycle: editCycle
-      });
+      // Reload user profile to ensure data is fresh
+      await loadUserProfile();
       setShowEditCycle(false);
       toast.success('Ciclo atualizado com sucesso!');
     }
