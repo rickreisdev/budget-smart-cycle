@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ArrowLeft, Trash2, Edit2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -83,6 +84,35 @@ const InstalmentPurchases = () => {
 
   const calculateTotal = () => {
     return transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  };
+
+  const groupTransactionsByBase = () => {
+    const groups: { [key: string]: Transaction[] } = {};
+    
+    transactions.forEach(transaction => {
+      const baseDescription = transaction.description.replace(/ \(\d+\/\d+\)$/, '');
+      const groupKey = `${baseDescription}-${transaction.amount}`;
+      
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(transaction);
+    });
+    
+    return Object.values(groups).map(group => {
+      const sortedGroup = group.sort((a, b) => (a.current_installment || 1) - (b.current_installment || 1));
+      const firstTransaction = sortedGroup[0];
+      const baseDescription = firstTransaction.description.replace(/ \(\d+\/\d+\)$/, '');
+      
+      return {
+        baseDescription,
+        transactions: sortedGroup,
+        totalAmount: sortedGroup.reduce((sum, t) => sum + t.amount, 0),
+        installments: firstTransaction.installments || 1,
+        firstDate: firstTransaction.date,
+        createdAt: firstTransaction.created_at
+      };
+    }).sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
   };
 
   const deleteTransaction = async (id: string) => {
@@ -272,59 +302,86 @@ const InstalmentPurchases = () => {
                 Nenhuma compra parcelada encontrada
               </p>
             ) : (
-              <div className="space-y-2">
-                {transactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium">{transaction.description}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatDateToBrazilian(transaction.date)} • {transaction.installments} parcelas
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-destructive">
-                        R$ {formatCurrency(transaction.amount)}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEdit(transaction)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
+              <Accordion type="multiple" className="w-full">
+                {groupTransactionsByBase().map((group, index) => (
+                  <AccordionItem key={index} value={`item-${index}`}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex-1 text-left">
+                          <div className="font-medium">{group.baseDescription}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatDateToBrazilian(group.firstDate)} • {group.installments} parcelas
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-destructive">
+                            R$ {formatCurrency(group.totalAmount)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEdit(group.transactions[0]);
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja excluir esta compra parcelada? 
-                              {transaction.installments && transaction.installments > 1 && 
-                                ' Todas as parcelas serão removidas.'}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteTransaction(transaction.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir esta compra parcelada? 
+                                  Todas as {group.installments} parcelas serão removidas.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteTransaction(group.transactions[0].id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 pt-2">
+                        {group.transactions.map((transaction) => (
+                          <div
+                            key={transaction.id}
+                            className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                          >
+                            <div className="flex-1">
+                              <div className="font-medium">{transaction.description}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatDateToBrazilian(transaction.date)}
+                              </div>
+                            </div>
+                            <span className="font-semibold text-destructive">
+                              R$ {formatCurrency(transaction.amount)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             )}
           </CardContent>
         </Card>
