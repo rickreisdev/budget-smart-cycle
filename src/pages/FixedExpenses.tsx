@@ -9,6 +9,7 @@ import { ArrowLeft, Trash2, Edit2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
@@ -177,7 +178,7 @@ const FixedExpenses = () => {
                     <div className="flex-1">
                       <div className="font-medium">{transaction.description}</div>
                       <div className="text-sm text-muted-foreground">
-                        {transaction.date}
+                        {formatDateToBrazilian(transaction.date)}
                         {transaction.is_recurrent && ' • Recorrente'}
                       </div>
                     </div>

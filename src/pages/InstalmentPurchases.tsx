@@ -10,6 +10,7 @@ import { ArrowLeft, Trash2, Edit2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
@@ -280,7 +281,7 @@ const InstalmentPurchases = () => {
                     <div className="flex-1">
                       <div className="font-medium">{transaction.description}</div>
                       <div className="text-sm text-muted-foreground">
-                        {transaction.date} • {transaction.installments} parcelas
+                        {formatDateToBrazilian(transaction.date)} • {transaction.installments} parcelas
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

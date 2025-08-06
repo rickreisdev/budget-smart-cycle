@@ -11,6 +11,7 @@ import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User,
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
@@ -92,16 +93,9 @@ const Index = () => {
     return typeTranslations[type];
   };
 
-  // Function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // Function to format date for display
+  const formatDateForDisplay = (dateString: string) => {
+    return formatDateToBrazilian(dateString);
   };
 
   // Redirect to auth if not logged in
@@ -978,7 +972,7 @@ const Index = () => {
                     </div>
                     {transaction.created_at && (
                       <div className="text-xs text-gray-400 mt-1">
-                        Adicionado em: {formatDate(transaction.created_at)}
+                        Adicionado em: {formatDateForDisplay(transaction.created_at)}
                       </div>
                     )}
                   </div>
