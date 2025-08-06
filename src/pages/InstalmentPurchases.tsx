@@ -56,6 +56,7 @@ const InstalmentPurchases = () => {
       .eq('user_id', user.id)
       .eq('type', 'card')
       .eq('is_recurrent', false)
+      .gt('installments', 1)
       .order('created_at', { ascending: false });
 
     if (error) {
