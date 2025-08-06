@@ -44,66 +44,7 @@ Uma aplicação web moderna para gerenciamento de controle de gastos pessoais, d
 - **UI Components**: Radix UI
 - **Icons**: Lucide React
 - **Notifications**: Sonner
-
-## 📦 Instalação e Execução
-
-### Pré-requisitos
-
-- Node.js (versão 18 ou superior)
-- npm ou bun
-
-### Passos para Instalação
-
-```bash
-# 1. Clone o repositório
-git clone <URL_DO_REPOSITORIO>
-cd budget-smart-cycle
-
-# 2. Instale as dependências
-npm install
-# ou
-bun install
-
-# 3. Configure as variáveis de ambiente
-# Crie um arquivo .env.local com suas credenciais do Supabase
-
-# 4. Execute o servidor de desenvolvimento
-npm run dev
-# ou
-bun dev
-```
-
-A aplicação estará disponível em `http://localhost:8080`
-
-## 🔧 Scripts Disponíveis
-
-```bash
-# Desenvolvimento
-npm run dev          # Inicia o servidor de desenvolvimento
-npm run build        # Gera build de produção
-npm run build:dev    # Gera build de desenvolvimento
-npm run preview      # Visualiza o build de produção
-npm run lint         # Executa o linter
-```
-
-## 🏗️ Estrutura do Projeto
-
-```
-src/
-├── components/       # Componentes reutilizáveis
-├── pages/           # Páginas da aplicação
-│   ├── Index.tsx           # Dashboard principal
-│   ├── Auth.tsx            # Autenticação
-│   ├── Income.tsx          # Gestão de rendas
-│   ├── InstalmentPurchases.tsx  # Compras parceladas
-│   ├── RecurringPurchases.tsx   # Gastos recorrentes
-│   ├── FixedExpenses.tsx        # Gastos fixos
-│   └── NotFound.tsx             # Página 404
-├── hooks/           # Custom hooks
-├── lib/             # Utilitários e configurações
-├── integrations/    # Integrações externas (Supabase)
-└── config/          # Configurações da aplicação
-```
+- **IA**: Lovable
 
 ## 🗄️ Banco de Dados
 
@@ -137,50 +78,10 @@ A aplicação é totalmente responsiva e otimizada para:
 - Tablet (768px - 1023px)
 - Mobile (até 767px)
 
-## 🚀 Deploy
-
-### Via Lovable
-
-1. Acesse o [projeto no Lovable](https://lovable.dev/projects/30d690d7-df66-45d1-bdd8-24e0aafd296a)
-2. Clique em Share → Publish
-
-### Via Vercel/Netlify
-
-```bash
-npm run build
-# Faça upload da pasta dist/ para sua plataforma de deploy
-```
-
 ---
-
-**Desenvolvido com ❤️ usando React, TypeScript e Supabase**
 
 ## 🚀 Desenvolvido com Lovable
 
 Este projeto foi desenvolvido com a ajuda do [Lovable](https://lovable.dev), uma plataforma que facilita o desenvolvimento de aplicações web modernas através de IA generativa.
 
 **URL do Projeto**: https://lovable.dev/projects/30d690d7-df66-45d1-bdd8-24e0aafd296a
-
-### Como Editar o Código
-
-**Via Lovable**
-
-- Acesse o [projeto no Lovable](https://lovable.dev/projects/30d690d7-df66-45d1-bdd8-24e0aafd296a)
-- Faça suas alterações através de prompts
-- As mudanças são automaticamente commitadas no repositório
-
-**Via IDE Local**
-
-- Clone o repositório
-- Faça suas alterações localmente
-- Push das mudanças será refletido no Lovable
-
-**Via GitHub**
-
-- Edite arquivos diretamente no GitHub
-- As mudanças serão sincronizadas com o Lovable
-
-**Via GitHub Codespaces**
-
-- Use o ambiente de desenvolvimento integrado do GitHub
-- Edite, teste e faça commit das mudanças
