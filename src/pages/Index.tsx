@@ -506,6 +506,82 @@ const Index = () => {
         .eq('type', 'casual')
         .like('date', `${userProfile.current_cycle}%`);
 
+      // Get current cycle installment purchases
+      const currentCycleTransactions = transactions.filter(t => 
+        t.date.startsWith(userProfile.current_cycle) && 
+        t.type === 'card' && 
+        !t.is_recurrent
+      );
+
+      // Group installment purchases by base description and amount
+      const installmentGroups = new Map();
+      currentCycleTransactions.forEach(t => {
+        const baseDescription = t.description.replace(/ \(\d+\/\d+\)$/, '');
+        const key = `${baseDescription}-${t.amount}`;
+        
+        if (!installmentGroups.has(key)) {
+          installmentGroups.set(key, {
+            baseDescription,
+            amount: t.amount,
+            installments: t.installments || 1,
+            ideal_day: t.ideal_day,
+            transactions: []
+          });
+        }
+        installmentGroups.get(key).transactions.push(t);
+      });
+
+      // Process each installment group
+      for (const [key, group] of installmentGroups) {
+        if (group.installments > 1) {
+          // For multi-installment purchases, advance to next installment
+          // First, delete all current installments
+          await supabase
+            .from('transactions')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('type', 'card')
+            .eq('amount', group.amount)
+            .like('description', `${group.baseDescription}%`)
+            .like('date', `${userProfile.current_cycle}%`);
+
+          // Then create new installments for remaining months
+          const remainingInstallments = group.installments - 1;
+          if (remainingInstallments > 0) {
+            const transactionsToInsert = [];
+            const [currentYear, currentMonth] = newCycle.split('-').map(Number);
+
+            for (let i = 0; i < remainingInstallments; i++) {
+              const targetMonth = currentMonth + i;
+              const targetYear = currentYear + Math.floor((targetMonth - 1) / 12);
+              const finalMonth = ((targetMonth - 1) % 12) + 1;
+              const dateString = `${targetYear}-${String(finalMonth).padStart(2, '0')}-01`;
+              
+              transactionsToInsert.push({
+                user_id: user.id,
+                type: 'card',
+                description: `${group.baseDescription} (${i + 1}/${remainingInstallments})`,
+                amount: group.amount,
+                date: dateString,
+                is_recurrent: false,
+                installments: remainingInstallments,
+                current_installment: i + 1,
+                ideal_day: group.ideal_day
+              });
+            }
+
+            if (transactionsToInsert.length > 0) {
+              await supabase
+                .from('transactions')
+                .insert(transactionsToInsert);
+            }
+          }
+        } else {
+          // For single installment purchases, they are already removed since they are in current cycle
+          // and we're starting a new cycle
+        }
+      }
+
       // Add recurrent card transactions to new cycle
       const recurrentTransactions = transactions
         .filter(t => t.is_recurrent && t.type === 'card')
