@@ -50,6 +50,13 @@ const Index = () => {
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [transactionFilters, setTransactionFilters] = useState({
+    income: true,
+    fixed: true,
+    cardInstallment: true,
+    cardRecurrent: true,
+    casual: true
+  });
 
   // Form states
   const [newTransaction, setNewTransaction] = useState({
@@ -614,9 +621,20 @@ const Index = () => {
     navigate('/auth');
   };
 
-  // Helper function to get current cycle transactions
+  // Helper function to get current cycle transactions with filters
   const getCurrentCycleTransactions = () => {
-    return transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || ''));
+    const currentTransactions = transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || ''));
+    
+    return currentTransactions.filter(transaction => {
+      if (transaction.type === 'income' && !transactionFilters.income) return false;
+      if (transaction.type === 'fixed' && !transactionFilters.fixed) return false;
+      if (transaction.type === 'casual' && !transactionFilters.casual) return false;
+      if (transaction.type === 'card') {
+        if (transaction.is_recurrent && !transactionFilters.cardRecurrent) return false;
+        if (!transaction.is_recurrent && !transactionFilters.cardInstallment) return false;
+      }
+      return true;
+    });
   };
 
   // Helper function to load more transactions
@@ -1039,6 +1057,85 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
+              {/* Filtros */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-medium text-gray-700">Filtrar por tipo:</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTransactionFilters({
+                        income: true,
+                        fixed: true,
+                        cardInstallment: true,
+                        cardRecurrent: true,
+                        casual: true
+                      })}
+                      className="h-6 text-xs px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    >
+                      Todos
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTransactionFilters({
+                        income: false,
+                        fixed: false,
+                        cardInstallment: false,
+                        cardRecurrent: false,
+                        casual: false
+                      })}
+                      className="h-6 text-xs px-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                    >
+                      Limpar
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="filter-income"
+                      checked={transactionFilters.income}
+                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, income: !!checked}))}
+                    />
+                    <Label htmlFor="filter-income" className="text-sm">Renda Extra</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="filter-fixed"
+                      checked={transactionFilters.fixed}
+                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, fixed: !!checked}))}
+                    />
+                    <Label htmlFor="filter-fixed" className="text-sm">Gasto Fixo</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="filter-card-installment"
+                      checked={transactionFilters.cardInstallment}
+                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardInstallment: !!checked}))}
+                    />
+                    <Label htmlFor="filter-card-installment" className="text-sm">Parceladas</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="filter-card-recurrent"
+                      checked={transactionFilters.cardRecurrent}
+                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardRecurrent: !!checked}))}
+                    />
+                    <Label htmlFor="filter-card-recurrent" className="text-sm">Cartão Recorrente</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="filter-casual"
+                      checked={transactionFilters.casual}
+                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, casual: !!checked}))}
+                    />
+                    <Label htmlFor="filter-casual" className="text-sm">Gasto Avulso</Label>
+                  </div>
+                </div>
+              </div>
+
               {visibleTransactionsList.map((transaction) => (
                 <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
                   <div className="flex-1">
