@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -1058,83 +1059,91 @@ const Index = () => {
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               {/* Filtros */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-sm font-medium text-gray-700">Filtrar por tipo:</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setTransactionFilters({
-                        income: true,
-                        fixed: true,
-                        cardInstallment: true,
-                        cardRecurrent: true,
-                        casual: true
-                      })}
-                      className="h-6 text-xs px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      Todos
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setTransactionFilters({
-                        income: false,
-                        fixed: false,
-                        cardInstallment: false,
-                        cardRecurrent: false,
-                        casual: false
-                      })}
-                      className="h-6 text-xs px-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
-                    >
-                      Limpar
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="filter-income"
-                      checked={transactionFilters.income}
-                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, income: !!checked}))}
-                    />
-                    <Label htmlFor="filter-income" className="text-sm">Renda Extra</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="filter-fixed"
-                      checked={transactionFilters.fixed}
-                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, fixed: !!checked}))}
-                    />
-                    <Label htmlFor="filter-fixed" className="text-sm">Gasto Fixo</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="filter-card-installment"
-                      checked={transactionFilters.cardInstallment}
-                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardInstallment: !!checked}))}
-                    />
-                    <Label htmlFor="filter-card-installment" className="text-sm">Parceladas</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="filter-card-recurrent"
-                      checked={transactionFilters.cardRecurrent}
-                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardRecurrent: !!checked}))}
-                    />
-                    <Label htmlFor="filter-card-recurrent" className="text-sm">Cartão Recorrente</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="filter-casual"
-                      checked={transactionFilters.casual}
-                      onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, casual: !!checked}))}
-                    />
-                    <Label htmlFor="filter-casual" className="text-sm">Gasto Avulso</Label>
-                  </div>
-                </div>
-              </div>
+              <Accordion type="single" collapsible>
+                <AccordionItem value="filters">
+                  <AccordionTrigger className="text-sm font-medium">
+                    Filtros
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setTransactionFilters({
+                              income: true,
+                              fixed: true,
+                              cardInstallment: true,
+                              cardRecurrent: true,
+                              casual: true
+                            })}
+                            className="h-6 text-xs px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          >
+                            Todos
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setTransactionFilters({
+                              income: false,
+                              fixed: false,
+                              cardInstallment: false,
+                              cardRecurrent: false,
+                              casual: false
+                            })}
+                            className="h-6 text-xs px-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                          >
+                            Limpar
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-income"
+                            checked={transactionFilters.income}
+                            onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, income: !!checked}))}
+                          />
+                          <Label htmlFor="filter-income" className="text-sm">Renda Extra</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-fixed"
+                            checked={transactionFilters.fixed}
+                            onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, fixed: !!checked}))}
+                          />
+                          <Label htmlFor="filter-fixed" className="text-sm">Gasto Fixo</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-card-installment"
+                            checked={transactionFilters.cardInstallment}
+                            onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardInstallment: !!checked}))}
+                          />
+                          <Label htmlFor="filter-card-installment" className="text-sm">Parceladas</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-card-recurrent"
+                            checked={transactionFilters.cardRecurrent}
+                            onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, cardRecurrent: !!checked}))}
+                          />
+                          <Label htmlFor="filter-card-recurrent" className="text-sm">Cartão Recorrente</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="filter-casual"
+                            checked={transactionFilters.casual}
+                            onCheckedChange={(checked) => setTransactionFilters(prev => ({...prev, casual: !!checked}))}
+                          />
+                          <Label htmlFor="filter-casual" className="text-sm">Gasto Avulso</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               {visibleTransactionsList.map((transaction) => (
                 <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
