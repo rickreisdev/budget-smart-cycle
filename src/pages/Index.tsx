@@ -1058,6 +1058,40 @@ const Index = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
+              {/* Resumo dos valores filtrados */}
+              {(() => {
+                const filteredTransactions = currentCycleTransactions;
+                const totalIncome = filteredTransactions
+                  .filter(t => t.type === 'income')
+                  .reduce((sum, t) => sum + Number(t.amount), 0);
+                const totalExpenses = filteredTransactions
+                  .filter(t => t.type !== 'income')
+                  .reduce((sum, t) => sum + Number(t.amount), 0);
+                const netTotal = totalIncome - totalExpenses;
+                
+                return (
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="text-sm font-medium text-blue-900 mb-2">Resumo dos Valores Filtrados</div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-green-600 font-medium">+R$ {formatCurrency(totalIncome)}</div>
+                        <div className="text-gray-500">Rendas</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-red-600 font-medium">-R$ {formatCurrency(totalExpenses)}</div>
+                        <div className="text-gray-500">Gastos</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`font-medium ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {netTotal >= 0 ? '+' : ''}R$ {formatCurrency(Math.abs(netTotal))}
+                        </div>
+                        <div className="text-gray-500">Líquido</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Filtros */}
               <Accordion type="single" collapsible>
                 <AccordionItem value="filters">
