@@ -34,6 +34,7 @@ const InstalmentPurchases = () => {
   const [loading, setLoading] = useState(true);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [currentCycle, setCurrentCycle] = useState<string>('');
 
   const [editTransaction, setEditTransaction] = useState({
     description: '',
@@ -47,7 +48,24 @@ const InstalmentPurchases = () => {
 
   useEffect(() => {
     loadTransactions();
+    loadCurrentCycle();
   }, [user]);
+
+  const loadCurrentCycle = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('current_cycle')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error loading current cycle:', error);
+    } else {
+      setCurrentCycle(data?.current_cycle || '');
+    }
+  };
 
   const loadTransactions = async () => {
     if (!user) return;
@@ -84,6 +102,13 @@ const InstalmentPurchases = () => {
 
   const calculateTotal = () => {
     return transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  };
+
+  const calculateCurrentCycleTotal = () => {
+    if (!currentCycle) return 0;
+    return transactions
+      .filter(t => t.date.startsWith(currentCycle))
+      .reduce((sum, t) => sum + Number(t.amount), 0);
   };
 
   const groupTransactionsByBase = () => {
@@ -278,19 +303,38 @@ const InstalmentPurchases = () => {
           <h1 className="text-2xl font-bold">Compras Parceladas</h1>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Total em Compras Parceladas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">
-              R$ {formatCurrency(calculateTotal())}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Total em Compras Parceladas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">
+                R$ {formatCurrency(calculateTotal())}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Parcelas do Ciclo Atual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-destructive">
+                R$ {formatCurrency(calculateCurrentCycleTotal())}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {currentCycle ? `Ciclo: ${currentCycle}` : 'Carregando ciclo...'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
