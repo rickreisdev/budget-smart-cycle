@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ArrowLeft, Trash2, Edit2, CreditCard } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Trash2, Edit2, CreditCard, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +36,7 @@ const InstalmentPurchases = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [currentCycle, setCurrentCycle] = useState<string>('');
+  const [includeSingleInstallments, setIncludeSingleInstallments] = useState(false);
 
   const [editTransaction, setEditTransaction] = useState({
     description: '',
@@ -49,7 +51,7 @@ const InstalmentPurchases = () => {
   useEffect(() => {
     loadTransactions();
     loadCurrentCycle();
-  }, [user]);
+  }, [user, includeSingleInstallments]);
 
   const loadCurrentCycle = async () => {
     if (!user) return;
@@ -70,14 +72,20 @@ const InstalmentPurchases = () => {
   const loadTransactions = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('transactions')
       .select('*')
       .eq('user_id', user.id)
       .eq('type', 'card')
-      .eq('is_recurrent', false)
-      .gt('installments', 1)
-      .order('created_at', { ascending: false });
+      .eq('is_recurrent', false);
+
+    if (includeSingleInstallments) {
+      query = query.gte('installments', 1);
+    } else {
+      query = query.gt('installments', 1);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error loading transactions:', error);
@@ -302,6 +310,27 @@ const InstalmentPurchases = () => {
           </Button>
           <h1 className="text-2xl font-bold">Compras Parceladas</h1>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="include-single"
+                checked={includeSingleInstallments}
+                onCheckedChange={setIncludeSingleInstallments}
+              />
+              <Label htmlFor="include-single">
+                Incluir compras com apenas 1 parcela restante
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
