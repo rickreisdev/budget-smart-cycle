@@ -614,19 +614,28 @@ const Index = () => {
       }
 
       // Add recurrent card transactions to new cycle
-      const recurrentTransactions = transactions
+      // First, get unique recurrent transactions (remove duplicates)
+      const uniqueRecurrentTransactions = new Map();
+      transactions
         .filter(t => t.is_recurrent && t.type === 'card')
-        .map(t => ({
-          user_id: user.id,
-          type: t.type,
-          description: t.description,
-          amount: t.amount,
-          date: newCycle + '-01',
-          is_recurrent: t.is_recurrent,
-          installments: t.installments,
-          current_installment: t.current_installment,
-          ideal_day: t.ideal_day
-        }));
+        .forEach(t => {
+          // Use description as key to avoid duplicates
+          if (!uniqueRecurrentTransactions.has(t.description)) {
+            uniqueRecurrentTransactions.set(t.description, {
+              user_id: user.id,
+              type: t.type,
+              description: t.description,
+              amount: t.amount,
+              date: newCycle + '-01',
+              is_recurrent: t.is_recurrent,
+              installments: t.installments,
+              current_installment: t.current_installment,
+              ideal_day: t.ideal_day
+            });
+          }
+        });
+
+      const recurrentTransactions = Array.from(uniqueRecurrentTransactions.values());
 
       if (recurrentTransactions.length > 0) {
         await supabase
