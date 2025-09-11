@@ -573,12 +573,12 @@ const Index = () => {
               transactionsToInsert.push({
                 user_id: user.id,
                 type: 'card',
-                description: `${group.baseDescription} (${i + 1}/${remainingInstallments})`,
+                description: `${group.baseDescription} (${i + 2}/${group.installments})`,
                 amount: group.amount,
                 date: dateString,
                 is_recurrent: false,
-                installments: remainingInstallments,
-                current_installment: i + 1,
+                installments: group.installments,
+                current_installment: i + 2,
                 ideal_day: group.ideal_day
               });
             }
