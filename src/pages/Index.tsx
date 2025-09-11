@@ -84,6 +84,11 @@ const Index = () => {
 
   const [editIdealDay, setEditIdealDay] = useState(5);
   const [editCycle, setEditCycle] = useState('');
+  
+  // Double confirmation states
+  const [showNewCycleConfirmation, setShowNewCycleConfirmation] = useState(false);
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [confirmationText, setConfirmationText] = useState('');
 
   // Function to format currency with Brazilian standard (comma as decimal separator)
   const formatCurrency = (value: number) => {
@@ -1282,7 +1287,7 @@ const Index = () => {
         </AlertDialog>
 
         {/* New Cycle Button with Confirmation */}
-        <AlertDialog>
+        <AlertDialog open={showNewCycleConfirmation} onOpenChange={setShowNewCycleConfirmation}>
           <AlertDialogTrigger asChild>
             <Button 
               className="w-full bg-blue-600 hover:bg-blue-700 py-3"
@@ -1309,15 +1314,66 @@ const Index = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={startNewCycle} className="bg-blue-600 hover:bg-blue-700">
-                Confirmar
+              <AlertDialogAction 
+                onClick={() => {
+                  setShowNewCycleConfirmation(false);
+                  // Open second confirmation dialog
+                  setTimeout(() => {
+                    const secondDialog = document.getElementById('new-cycle-final-confirmation');
+                    if (secondDialog) secondDialog.click();
+                  }, 100);
+                }} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Continuar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Second confirmation for new cycle */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button id="new-cycle-final-confirmation" className="hidden" />
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>⚠️ Confirmação Final</AlertDialogTitle>
+              <AlertDialogDescription>
+                <strong>ÚLTIMA CONFIRMAÇÃO:</strong> Para iniciar um novo ciclo, digite <strong>"CONFIRMAR"</strong> no campo abaixo:
+                <br /><br />
+                <Input
+                  placeholder="Digite CONFIRMAR"
+                  value={confirmationText}
+                  onChange={(e) => setConfirmationText(e.target.value)}
+                  className="mt-2"
+                />
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmationText('')}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (confirmationText === 'CONFIRMAR') {
+                    startNewCycle();
+                    setConfirmationText('');
+                  } else {
+                    toast.error('Digite "CONFIRMAR" para prosseguir');
+                  }
+                }}
+                disabled={confirmationText !== 'CONFIRMAR'}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Iniciar Novo Ciclo
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
 
         {/* Reset Data Button with Confirmation */}
-        <AlertDialog>
+        <AlertDialog open={showResetConfirmation} onOpenChange={setShowResetConfirmation}>
           <AlertDialogTrigger asChild>
             <Button 
               variant="destructive"
@@ -1352,10 +1408,61 @@ const Index = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction 
-                onClick={resetAllData}
+                onClick={() => {
+                  setShowResetConfirmation(false);
+                  // Open second confirmation dialog
+                  setTimeout(() => {
+                    const secondDialog = document.getElementById('reset-final-confirmation');
+                    if (secondDialog) secondDialog.click();
+                  }, 100);
+                }}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Sim, Resetar Tudo
+                Continuar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Second confirmation for reset */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button id="reset-final-confirmation" className="hidden" />
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>🚨 CONFIRMAÇÃO DEFINITIVA</AlertDialogTitle>
+              <AlertDialogDescription>
+                <strong>ÚLTIMA CHANCE:</strong> Para resetar TODOS os dados permanentemente, digite <strong>"RESETAR TUDO"</strong> no campo abaixo:
+                <br /><br />
+                <div className="bg-red-50 border border-red-200 p-3 rounded mb-3">
+                  <strong className="text-red-600">AÇÃO IRREVERSÍVEL:</strong> Todos os seus dados serão perdidos para sempre!
+                </div>
+                <Input
+                  placeholder="Digite RESETAR TUDO"
+                  value={confirmationText}
+                  onChange={(e) => setConfirmationText(e.target.value)}
+                  className="mt-2"
+                />
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmationText('')}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (confirmationText === 'RESETAR TUDO') {
+                    resetAllData();
+                    setConfirmationText('');
+                  } else {
+                    toast.error('Digite "RESETAR TUDO" para prosseguir');
+                  }
+                }}
+                disabled={confirmationText !== 'RESETAR TUDO'}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Resetar Definitivamente
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
