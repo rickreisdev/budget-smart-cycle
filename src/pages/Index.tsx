@@ -666,11 +666,10 @@ const Index = () => {
         }
       }
 
-      // Add ALL recurrent transactions to new cycle (not just card)
-      // Get only one unique instance of each recurrent transaction by description and amount
+      // Handle recurrent transactions for new cycle
+      // Get all unique recurrent transactions that should exist
       const uniqueRecurrentMap = new Map();
       
-      // First pass: collect unique recurrent transactions from ALL types
       transactions
         .filter(t => t.is_recurrent === true)
         .forEach(t => {
@@ -680,23 +679,40 @@ const Index = () => {
           }
         });
 
-      // Create new transactions for the new cycle from unique recurrent transactions
-      const recurrentTransactions = Array.from(uniqueRecurrentMap.values()).map(t => ({
-        user_id: user.id,
-        type: t.type,
-        description: t.description,
-        amount: t.amount,
-        date: newCycle + '-01',
-        is_recurrent: true, // Ensure it remains recurrent
-        installments: t.installments,
-        current_installment: t.current_installment,
-        ideal_day: t.ideal_day
-      }));
+      // Check which recurrent transactions already exist in the new cycle
+      const { data: existingRecurrentInNewCycle } = await supabase
+        .from('transactions')
+        .select('description, amount, type')
+        .eq('user_id', user.id)
+        .eq('is_recurrent', true)
+        .like('date', `${newCycle}%`);
 
-      if (recurrentTransactions.length > 0) {
+      const existingKeys = new Set(
+        (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
+      );
+
+      // Only create recurrent transactions that don't already exist in the new cycle
+      const recurrentTransactionsToInsert = Array.from(uniqueRecurrentMap.values())
+        .filter(t => {
+          const key = `${t.description}_${t.amount}_${t.type}`;
+          return !existingKeys.has(key);
+        })
+        .map(t => ({
+          user_id: user.id,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          date: newCycle + '-01',
+          is_recurrent: true,
+          installments: t.installments,
+          current_installment: t.current_installment,
+          ideal_day: t.ideal_day
+        }));
+
+      if (recurrentTransactionsToInsert.length > 0) {
         await supabase
           .from('transactions')
-          .insert(recurrentTransactions);
+          .insert(recurrentTransactionsToInsert);
       }
 
       loadUserProfile();
@@ -714,7 +730,9 @@ const Index = () => {
   const getCurrentCycleTransactions = () => {
     const currentTransactions = transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || ''));
     
-    return currentTransactions.filter(transaction => {
+    // Remove duplicates for recurrent transactions - show only one instance of each
+    const uniqueTransactions = new Map();
+    const filteredTransactions = currentTransactions.filter(transaction => {
       if (transaction.type === 'income' && !transactionFilters.income) return false;
       if (transaction.type === 'fixed' && !transactionFilters.fixed) return false;
       if (transaction.type === 'casual' && !transactionFilters.casual) return false;
@@ -724,6 +742,21 @@ const Index = () => {
       }
       return true;
     });
+
+    // For recurrent transactions, keep only one instance
+    filteredTransactions.forEach(transaction => {
+      if (transaction.is_recurrent) {
+        const uniqueKey = `${transaction.description}_${transaction.amount}_${transaction.type}`;
+        if (!uniqueTransactions.has(uniqueKey)) {
+          uniqueTransactions.set(uniqueKey, transaction);
+        }
+      } else {
+        // For non-recurrent transactions, use the transaction ID as key to keep all
+        uniqueTransactions.set(transaction.id, transaction);
+      }
+    });
+
+    return Array.from(uniqueTransactions.values());
   };
 
   // Helper function to load more transactions
