@@ -546,7 +546,13 @@ const Index = () => {
     if (!user || !userProfile) return;
 
     const { availableBalance } = calculateTotals();
-    const newCycle = new Date().toISOString().slice(0, 7);
+    
+    // Increment the current cycle month
+    const [currentYear, currentMonth] = userProfile.current_cycle.split('-').map(Number);
+    const nextMonth = currentMonth + 1;
+    const nextYear = currentYear + Math.floor((nextMonth - 1) / 12);
+    const finalMonth = ((nextMonth - 1) % 12) + 1;
+    const newCycle = `${nextYear}-${String(finalMonth).padStart(2, '0')}`;
     
     const updates: any = {
       current_cycle: newCycle
