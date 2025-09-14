@@ -50,6 +50,7 @@ const Index = () => {
   const [showEditCycle, setShowEditCycle] = useState(false);
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [recurrentToDelete, setRecurrentToDelete] = useState<Transaction | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionFilters, setTransactionFilters] = useState({
     income: true,
@@ -342,6 +343,12 @@ const Index = () => {
       return;
     }
 
+    // Check if it's a recurrent transaction
+    if (transactionToDelete.is_recurrent) {
+      setRecurrentToDelete(transactionToDelete);
+      return;
+    }
+
     try {
       // If it's a card transaction with installments, we need to find and delete all related installments
       if (transactionToDelete.type === 'card' && transactionToDelete.installments && transactionToDelete.installments > 1) {
@@ -378,6 +385,52 @@ const Index = () => {
       toast.success('Transação removida com sucesso');
     } catch (error) {
       console.error('Error in deleteTransaction:', error);
+      toast.error('Erro ao remover transação');
+    }
+  };
+
+  const deleteRecurrentFromCurrentCycle = async () => {
+    if (!recurrentToDelete || !userProfile) return;
+
+    try {
+      // Delete only from current cycle
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', recurrentToDelete.id);
+
+      if (error) throw error;
+
+      loadTransactions();
+      toast.success('Transação removida apenas do ciclo atual');
+      setRecurrentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting recurrent from current cycle:', error);
+      toast.error('Erro ao remover transação');
+    }
+  };
+
+  const deleteRecurrentFromAllCycles = async () => {
+    if (!recurrentToDelete || !userProfile) return;
+
+    try {
+      // Delete all instances of this recurrent transaction
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user?.id)
+        .eq('description', recurrentToDelete.description)
+        .eq('amount', recurrentToDelete.amount)
+        .eq('type', recurrentToDelete.type)
+        .eq('is_recurrent', true);
+
+      if (error) throw error;
+
+      loadTransactions();
+      toast.success('Transação recorrente removida de todos os ciclos');
+      setRecurrentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting recurrent from all cycles:', error);
       toast.error('Erro ao remover transação');
     }
   };
@@ -1312,6 +1365,43 @@ const Index = () => {
               >
                 Excluir
               </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Recurrent Transaction Delete Options Dialog */}
+        <AlertDialog open={!!recurrentToDelete} onOpenChange={() => setRecurrentToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remover Transação Recorrente</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta é uma transação recorrente. Como você gostaria de removê-la?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-3">
+              <Button
+                onClick={deleteRecurrentFromCurrentCycle}
+                variant="outline"
+                className="w-full justify-start"
+              >
+                <span className="text-left">
+                  <div className="font-medium">Remover apenas do ciclo atual</div>
+                  <div className="text-sm text-gray-500">A transação continuará aparecendo nos próximos ciclos</div>
+                </span>
+              </Button>
+              <Button
+                onClick={deleteRecurrentFromAllCycles}
+                variant="destructive"
+                className="w-full justify-start"
+              >
+                <span className="text-left">
+                  <div className="font-medium">Remover de todos os ciclos</div>
+                  <div className="text-sm text-red-200">A transação será removida permanentemente</div>
+                </span>
+              </Button>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
