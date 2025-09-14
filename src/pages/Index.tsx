@@ -666,15 +666,15 @@ const Index = () => {
         }
       }
 
-      // Add recurrent card transactions to new cycle
+      // Add ALL recurrent transactions to new cycle (not just card)
       // Get only one unique instance of each recurrent transaction by description and amount
       const uniqueRecurrentMap = new Map();
       
-      // First pass: collect unique recurrent transactions
+      // First pass: collect unique recurrent transactions from ALL types
       transactions
-        .filter(t => t.is_recurrent && t.type === 'card')
+        .filter(t => t.is_recurrent === true)
         .forEach(t => {
-          const uniqueKey = `${t.description}_${t.amount}`;
+          const uniqueKey = `${t.description}_${t.amount}_${t.type}`;
           if (!uniqueRecurrentMap.has(uniqueKey)) {
             uniqueRecurrentMap.set(uniqueKey, t);
           }
@@ -687,7 +687,7 @@ const Index = () => {
         description: t.description,
         amount: t.amount,
         date: newCycle + '-01',
-        is_recurrent: t.is_recurrent,
+        is_recurrent: true, // Ensure it remains recurrent
         installments: t.installments,
         current_installment: t.current_installment,
         ideal_day: t.ideal_day
