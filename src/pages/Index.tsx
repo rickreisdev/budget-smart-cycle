@@ -32,7 +32,9 @@ interface Transaction {
 interface UserProfile {
   id: string;
   username: string;
-  salary: number;
+  salary: number; // Deprecated, kept for backward compatibility
+  initial_income: number;
+  monthly_salary: number;
   ideal_day: number;
   total_saved: number;
   current_cycle: string;
@@ -80,7 +82,8 @@ const Index = () => {
   });
 
   const [setupData, setSetupData] = useState({
-    salary: 0,
+    initial_income: 0,
+    monthly_salary: 0,
     ideal_day: 5
   });
 
@@ -143,7 +146,8 @@ const Index = () => {
       toast.error('Erro ao carregar perfil');
     } else if (data) {
       setUserProfile(data);
-      setIsFirstTime(data.salary === 0);
+      // Check if it's first time based on new fields
+      setIsFirstTime(data.initial_income === 0 && data.monthly_salary === 0);
     }
     setLoading(false);
   };
@@ -192,7 +196,8 @@ const Index = () => {
       t.date.startsWith(userProfile.current_cycle)
     );
 
-    const totalIncome = userProfile.salary + currentMonthTransactions
+    // Calculate total income based on initial income + any additional income transactions
+    const totalIncome = userProfile.initial_income + currentMonthTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -227,7 +232,8 @@ const Index = () => {
     const { error } = await supabase
       .from('profiles')
       .update({
-        salary: setupData.salary,
+        initial_income: setupData.initial_income,
+        monthly_salary: setupData.monthly_salary,
         ideal_day: setupData.ideal_day
       })
       .eq('id', user.id);
@@ -237,7 +243,8 @@ const Index = () => {
     } else {
       setUserProfile({
         ...userProfile,
-        salary: setupData.salary,
+        initial_income: setupData.initial_income,
+        monthly_salary: setupData.monthly_salary,
         ideal_day: setupData.ideal_day
       });
       setIsFirstTime(false);
@@ -560,8 +567,14 @@ const Index = () => {
       current_cycle: newCycle
     };
 
+    // Add current balance to total saved
     if (availableBalance > 0) {
       updates.total_saved = userProfile.total_saved + availableBalance;
+    }
+
+    // Add monthly salary to initial income if salary > 0
+    if (userProfile.monthly_salary > 0) {
+      updates.initial_income = userProfile.initial_income + userProfile.monthly_salary;
     }
 
     const { error } = await supabase
@@ -837,7 +850,9 @@ const Index = () => {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          salary: 0,
+          initial_income: 0,
+          monthly_salary: 0,
+          salary: 0, // Keep for backward compatibility
           ideal_day: 5,
           total_saved: 0,
           current_cycle: selectedMonth
@@ -901,15 +916,28 @@ const Index = () => {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div>
-                <Label htmlFor="salary">Salário Mensal (R$)</Label>
+                <Label htmlFor="initial_income">Receita Inicial (R$)</Label>
                 <Input
-                  id="salary"
+                  id="initial_income"
                   type="number"
                   placeholder="0,00"
-                  value={setupData.salary || ''}
-                  onChange={(e) => setSetupData({...setupData, salary: Number(e.target.value)})}
+                  value={setupData.initial_income || ''}
+                  onChange={(e) => setSetupData({...setupData, initial_income: Number(e.target.value)})}
                   className="mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">Valor que você possui disponível no início do ciclo</p>
+              </div>
+              <div>
+                <Label htmlFor="monthly_salary">Salário Mensal (R$)</Label>
+                <Input
+                  id="monthly_salary"
+                  type="number"
+                  placeholder="0,00"
+                  value={setupData.monthly_salary || ''}
+                  onChange={(e) => setSetupData({...setupData, monthly_salary: Number(e.target.value)})}
+                  className="mt-1"
+                />
+                <p className="text-xs text-gray-500 mt-1">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
               </div>
               <div>
                 <Label htmlFor="idealDay">Dia Ideal do Cartão</Label>

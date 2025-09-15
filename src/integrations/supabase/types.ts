@@ -20,6 +20,8 @@ export type Database = {
           current_cycle: string | null
           id: string
           ideal_day: number | null
+          initial_income: number | null
+          monthly_salary: number | null
           salary: number | null
           total_saved: number | null
           updated_at: string | null
@@ -30,6 +32,8 @@ export type Database = {
           current_cycle?: string | null
           id: string
           ideal_day?: number | null
+          initial_income?: number | null
+          monthly_salary?: number | null
           salary?: number | null
           total_saved?: number | null
           updated_at?: string | null
@@ -40,6 +44,8 @@ export type Database = {
           current_cycle?: string | null
           id?: string
           ideal_day?: number | null
+          initial_income?: number | null
+          monthly_salary?: number | null
           salary?: number | null
           total_saved?: number | null
           updated_at?: string | null
