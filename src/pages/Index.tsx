@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import MonthSelector from '@/components/MonthSelector';
 
 interface Transaction {
   id: string;
@@ -89,6 +90,7 @@ const Index = () => {
   // Double confirmation states
   const [showNewCycleConfirmation, setShowNewCycleConfirmation] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [showMonthSelectorAfterReset, setShowMonthSelectorAfterReset] = useState(false);
   const [confirmationText, setConfirmationText] = useState('');
 
   // Function to format currency with Brazilian standard (comma as decimal separator)
@@ -814,6 +816,13 @@ const Index = () => {
 
   const resetAllData = async () => {
     if (!user || !userProfile) return;
+    
+    setShowResetConfirmation(false);
+    setShowMonthSelectorAfterReset(true);
+  };
+
+  const handleMonthSelectedAfterReset = async (selectedMonth: string) => {
+    if (!user || !userProfile) return;
 
     try {
       // Delete all transactions
@@ -824,14 +833,14 @@ const Index = () => {
 
       if (transactionsError) throw transactionsError;
 
-      // Reset profile to default values
+      // Reset profile to default values with selected month
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
           salary: 0,
           ideal_day: 5,
           total_saved: 0,
-          current_cycle: new Date().toISOString().slice(0, 7)
+          current_cycle: selectedMonth
         })
         .eq('id', user.id);
 
@@ -841,12 +850,25 @@ const Index = () => {
       await loadUserProfile();
       await loadTransactions();
       
+      setShowMonthSelectorAfterReset(false);
       toast.success('Todos os dados foram resetados com sucesso!');
     } catch (error) {
       console.error('Error resetting data:', error);
       toast.error('Erro ao resetar os dados');
+      setShowMonthSelectorAfterReset(false);
     }
   };
+
+  if (showMonthSelectorAfterReset) {
+    return (
+      <MonthSelector 
+        onMonthSelected={handleMonthSelectedAfterReset}
+        loading={false}
+        title="Selecionar Novo Mês"
+        description="Após resetar os dados, selecione o mês atual para reiniciar seu controle financeiro."
+      />
+    );
+  }
 
   if (authLoading || loading) {
     return (

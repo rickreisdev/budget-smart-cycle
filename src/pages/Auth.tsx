@@ -9,12 +9,15 @@ import { Wallet, User, Lock, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import MonthSelector from '@/components/MonthSelector';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showMonthSelector, setShowMonthSelector] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState<{email: string, password: string, username: string} | null>(null);
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
@@ -23,15 +26,24 @@ const Auth = () => {
       return;
     }
 
+    // Store user data and show month selector
+    setPendingUserData({ email, password, username });
+    setShowMonthSelector(true);
+  };
+
+  const handleMonthSelected = async (selectedMonth: string) => {
+    if (!pendingUserData) return;
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: pendingUserData.email,
+        password: pendingUserData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            username: username
+            username: pendingUserData.username,
+            initial_cycle: selectedMonth
           }
         }
       });
@@ -42,11 +54,21 @@ const Auth = () => {
         } else {
           toast.error(error.message);
         }
+        setShowMonthSelector(false);
+        setPendingUserData(null);
       } else {
         toast.success('Cadastro realizado com sucesso! Verifique seu email.');
+        setShowMonthSelector(false);
+        setPendingUserData(null);
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setUsername('');
       }
     } catch (error) {
       toast.error('Erro ao criar conta');
+      setShowMonthSelector(false);
+      setPendingUserData(null);
     } finally {
       setLoading(false);
     }
@@ -81,6 +103,17 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  if (showMonthSelector) {
+    return (
+      <MonthSelector 
+        onMonthSelected={handleMonthSelected}
+        loading={loading}
+        title="Configuração Inicial"
+        description="Para finalizar seu cadastro, selecione o mês atual do seu controle financeiro."
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 flex items-center justify-center">
