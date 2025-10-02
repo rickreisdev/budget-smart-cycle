@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import MonthSelector from '@/components/MonthSelector';
 
 interface Transaction {
   id: string;
@@ -31,7 +32,9 @@ interface Transaction {
 interface UserProfile {
   id: string;
   username: string;
-  salary: number;
+  salary: number; // Deprecated, kept for backward compatibility
+  initial_income: number;
+  monthly_salary: number;
   ideal_day: number;
   total_saved: number;
   current_cycle: string;
@@ -50,6 +53,7 @@ const Index = () => {
   const [showEditCycle, setShowEditCycle] = useState(false);
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+  const [recurrentToDelete, setRecurrentToDelete] = useState<Transaction | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionFilters, setTransactionFilters] = useState({
     income: true,
@@ -78,7 +82,8 @@ const Index = () => {
   });
 
   const [setupData, setSetupData] = useState({
-    salary: 0,
+    initial_income: 0,
+    monthly_salary: 0,
     ideal_day: 5
   });
 
@@ -88,6 +93,7 @@ const Index = () => {
   // Double confirmation states
   const [showNewCycleConfirmation, setShowNewCycleConfirmation] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [showMonthSelectorAfterReset, setShowMonthSelectorAfterReset] = useState(false);
   const [confirmationText, setConfirmationText] = useState('');
 
   // Function to format currency with Brazilian standard (comma as decimal separator)
@@ -140,7 +146,8 @@ const Index = () => {
       toast.error('Erro ao carregar perfil');
     } else if (data) {
       setUserProfile(data);
-      setIsFirstTime(data.salary === 0);
+      // Check if it's first time based on new fields
+      setIsFirstTime(data.initial_income === 0 && data.monthly_salary === 0);
     }
     setLoading(false);
   };
@@ -189,7 +196,8 @@ const Index = () => {
       t.date.startsWith(userProfile.current_cycle)
     );
 
-    const totalIncome = userProfile.salary + currentMonthTransactions
+    // Calculate total income based on initial income + any additional income transactions
+    const totalIncome = userProfile.initial_income + currentMonthTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -224,7 +232,8 @@ const Index = () => {
     const { error } = await supabase
       .from('profiles')
       .update({
-        salary: setupData.salary,
+        initial_income: setupData.initial_income,
+        monthly_salary: setupData.monthly_salary,
         ideal_day: setupData.ideal_day
       })
       .eq('id', user.id);
@@ -234,7 +243,8 @@ const Index = () => {
     } else {
       setUserProfile({
         ...userProfile,
-        salary: setupData.salary,
+        initial_income: setupData.initial_income,
+        monthly_salary: setupData.monthly_salary,
         ideal_day: setupData.ideal_day
       });
       setIsFirstTime(false);
@@ -342,6 +352,12 @@ const Index = () => {
       return;
     }
 
+    // Check if it's a recurrent transaction
+    if (transactionToDelete.is_recurrent) {
+      setRecurrentToDelete(transactionToDelete);
+      return;
+    }
+
     try {
       // If it's a card transaction with installments, we need to find and delete all related installments
       if (transactionToDelete.type === 'card' && transactionToDelete.installments && transactionToDelete.installments > 1) {
@@ -378,6 +394,52 @@ const Index = () => {
       toast.success('Transação removida com sucesso');
     } catch (error) {
       console.error('Error in deleteTransaction:', error);
+      toast.error('Erro ao remover transação');
+    }
+  };
+
+  const deleteRecurrentFromCurrentCycle = async () => {
+    if (!recurrentToDelete || !userProfile) return;
+
+    try {
+      // Delete only from current cycle
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', recurrentToDelete.id);
+
+      if (error) throw error;
+
+      loadTransactions();
+      toast.success('Transação removida apenas do ciclo atual');
+      setRecurrentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting recurrent from current cycle:', error);
+      toast.error('Erro ao remover transação');
+    }
+  };
+
+  const deleteRecurrentFromAllCycles = async () => {
+    if (!recurrentToDelete || !userProfile) return;
+
+    try {
+      // Delete all instances of this recurrent transaction
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user?.id)
+        .eq('description', recurrentToDelete.description)
+        .eq('amount', recurrentToDelete.amount)
+        .eq('type', recurrentToDelete.type)
+        .eq('is_recurrent', true);
+
+      if (error) throw error;
+
+      loadTransactions();
+      toast.success('Transação recorrente removida de todos os ciclos');
+      setRecurrentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting recurrent from all cycles:', error);
       toast.error('Erro ao remover transação');
     }
   };
@@ -493,14 +555,26 @@ const Index = () => {
     if (!user || !userProfile) return;
 
     const { availableBalance } = calculateTotals();
-    const newCycle = new Date().toISOString().slice(0, 7);
+    
+    // Increment the current cycle month
+    const [currentYear, currentMonth] = userProfile.current_cycle.split('-').map(Number);
+    const nextMonth = currentMonth + 1;
+    const nextYear = currentYear + Math.floor((nextMonth - 1) / 12);
+    const finalMonth = ((nextMonth - 1) % 12) + 1;
+    const newCycle = `${nextYear}-${String(finalMonth).padStart(2, '0')}`;
     
     const updates: any = {
       current_cycle: newCycle
     };
 
+    // Add current balance to total saved
     if (availableBalance > 0) {
       updates.total_saved = userProfile.total_saved + availableBalance;
+    }
+
+    // Add monthly salary to initial income if salary > 0
+    if (userProfile.monthly_salary > 0) {
+      updates.initial_income = userProfile.initial_income + userProfile.monthly_salary;
     }
 
     const { error } = await supabase
@@ -613,37 +687,53 @@ const Index = () => {
         }
       }
 
-      // Add recurrent card transactions to new cycle
-      // Get only one unique instance of each recurrent transaction by description and amount
+      // Handle recurrent transactions for new cycle
+      // Get all unique recurrent transactions that should exist
       const uniqueRecurrentMap = new Map();
       
-      // First pass: collect unique recurrent transactions
       transactions
-        .filter(t => t.is_recurrent && t.type === 'card')
+        .filter(t => t.is_recurrent === true)
         .forEach(t => {
-          const uniqueKey = `${t.description}_${t.amount}`;
+          const uniqueKey = `${t.description}_${t.amount}_${t.type}`;
           if (!uniqueRecurrentMap.has(uniqueKey)) {
             uniqueRecurrentMap.set(uniqueKey, t);
           }
         });
 
-      // Create new transactions for the new cycle from unique recurrent transactions
-      const recurrentTransactions = Array.from(uniqueRecurrentMap.values()).map(t => ({
-        user_id: user.id,
-        type: t.type,
-        description: t.description,
-        amount: t.amount,
-        date: newCycle + '-01',
-        is_recurrent: t.is_recurrent,
-        installments: t.installments,
-        current_installment: t.current_installment,
-        ideal_day: t.ideal_day
-      }));
+      // Check which recurrent transactions already exist in the new cycle
+      const { data: existingRecurrentInNewCycle } = await supabase
+        .from('transactions')
+        .select('description, amount, type')
+        .eq('user_id', user.id)
+        .eq('is_recurrent', true)
+        .like('date', `${newCycle}%`);
 
-      if (recurrentTransactions.length > 0) {
+      const existingKeys = new Set(
+        (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
+      );
+
+      // Only create recurrent transactions that don't already exist in the new cycle
+      const recurrentTransactionsToInsert = Array.from(uniqueRecurrentMap.values())
+        .filter(t => {
+          const key = `${t.description}_${t.amount}_${t.type}`;
+          return !existingKeys.has(key);
+        })
+        .map(t => ({
+          user_id: user.id,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          date: newCycle + '-01',
+          is_recurrent: true,
+          installments: t.installments,
+          current_installment: t.current_installment,
+          ideal_day: t.ideal_day
+        }));
+
+      if (recurrentTransactionsToInsert.length > 0) {
         await supabase
           .from('transactions')
-          .insert(recurrentTransactions);
+          .insert(recurrentTransactionsToInsert);
       }
 
       loadUserProfile();
@@ -661,7 +751,9 @@ const Index = () => {
   const getCurrentCycleTransactions = () => {
     const currentTransactions = transactions.filter(t => t.date.startsWith(userProfile?.current_cycle || ''));
     
-    return currentTransactions.filter(transaction => {
+    // Remove duplicates for recurrent transactions - show only one instance of each
+    const uniqueTransactions = new Map();
+    const filteredTransactions = currentTransactions.filter(transaction => {
       if (transaction.type === 'income' && !transactionFilters.income) return false;
       if (transaction.type === 'fixed' && !transactionFilters.fixed) return false;
       if (transaction.type === 'casual' && !transactionFilters.casual) return false;
@@ -671,6 +763,21 @@ const Index = () => {
       }
       return true;
     });
+
+    // For recurrent transactions, keep only one instance
+    filteredTransactions.forEach(transaction => {
+      if (transaction.is_recurrent) {
+        const uniqueKey = `${transaction.description}_${transaction.amount}_${transaction.type}`;
+        if (!uniqueTransactions.has(uniqueKey)) {
+          uniqueTransactions.set(uniqueKey, transaction);
+        }
+      } else {
+        // For non-recurrent transactions, use the transaction ID as key to keep all
+        uniqueTransactions.set(transaction.id, transaction);
+      }
+    });
+
+    return Array.from(uniqueTransactions.values());
   };
 
   // Helper function to load more transactions
@@ -722,6 +829,13 @@ const Index = () => {
 
   const resetAllData = async () => {
     if (!user || !userProfile) return;
+    
+    setShowResetConfirmation(false);
+    setShowMonthSelectorAfterReset(true);
+  };
+
+  const handleMonthSelectedAfterReset = async (selectedMonth: string) => {
+    if (!user || !userProfile) return;
 
     try {
       // Delete all transactions
@@ -732,14 +846,16 @@ const Index = () => {
 
       if (transactionsError) throw transactionsError;
 
-      // Reset profile to default values
+      // Reset profile to default values with selected month
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          salary: 0,
+          initial_income: 0,
+          monthly_salary: 0,
+          salary: 0, // Keep for backward compatibility
           ideal_day: 5,
           total_saved: 0,
-          current_cycle: new Date().toISOString().slice(0, 7)
+          current_cycle: selectedMonth
         })
         .eq('id', user.id);
 
@@ -749,12 +865,25 @@ const Index = () => {
       await loadUserProfile();
       await loadTransactions();
       
+      setShowMonthSelectorAfterReset(false);
       toast.success('Todos os dados foram resetados com sucesso!');
     } catch (error) {
       console.error('Error resetting data:', error);
       toast.error('Erro ao resetar os dados');
+      setShowMonthSelectorAfterReset(false);
     }
   };
+
+  if (showMonthSelectorAfterReset) {
+    return (
+      <MonthSelector 
+        onMonthSelected={handleMonthSelectedAfterReset}
+        loading={false}
+        title="Selecionar Novo Mês"
+        description="Após resetar os dados, selecione o mês atual para reiniciar seu controle financeiro."
+      />
+    );
+  }
 
   if (authLoading || loading) {
     return (
@@ -787,15 +916,28 @@ const Index = () => {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div>
-                <Label htmlFor="salary">Salário Mensal (R$)</Label>
+                <Label htmlFor="initial_income">Receita Inicial (R$)</Label>
                 <Input
-                  id="salary"
+                  id="initial_income"
                   type="number"
                   placeholder="0,00"
-                  value={setupData.salary || ''}
-                  onChange={(e) => setSetupData({...setupData, salary: Number(e.target.value)})}
+                  value={setupData.initial_income || ''}
+                  onChange={(e) => setSetupData({...setupData, initial_income: Number(e.target.value)})}
                   className="mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">Valor que você possui disponível no início do ciclo</p>
+              </div>
+              <div>
+                <Label htmlFor="monthly_salary">Salário Mensal (R$)</Label>
+                <Input
+                  id="monthly_salary"
+                  type="number"
+                  placeholder="0,00"
+                  value={setupData.monthly_salary || ''}
+                  onChange={(e) => setSetupData({...setupData, monthly_salary: Number(e.target.value)})}
+                  className="mt-1"
+                />
+                <p className="text-xs text-gray-500 mt-1">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
               </div>
               <div>
                 <Label htmlFor="idealDay">Dia Ideal do Cartão</Label>
@@ -1312,6 +1454,43 @@ const Index = () => {
               >
                 Excluir
               </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Recurrent Transaction Delete Options Dialog */}
+        <AlertDialog open={!!recurrentToDelete} onOpenChange={() => setRecurrentToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remover Transação Recorrente</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta é uma transação recorrente. Como você gostaria de removê-la?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-3">
+              <Button
+                onClick={deleteRecurrentFromCurrentCycle}
+                variant="outline"
+                className="w-full justify-start"
+              >
+                <span className="text-left">
+                  <div className="font-medium">Remover apenas do ciclo atual</div>
+                  <div className="text-sm text-gray-500">A transação continuará aparecendo nos próximos ciclos</div>
+                </span>
+              </Button>
+              <Button
+                onClick={deleteRecurrentFromAllCycles}
+                variant="destructive"
+                className="w-full justify-start"
+              >
+                <span className="text-left">
+                  <div className="font-medium">Remover de todos os ciclos</div>
+                  <div className="text-sm text-red-200">A transação será removida permanentemente</div>
+                </span>
+              </Button>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
