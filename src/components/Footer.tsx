@@ -8,7 +8,7 @@ export const Footer = () => {
           {currentYear} | Desenvolvido por
         </span>
         <a
-          href="https://rickreis.dev.br"
+          href="https://rickreis.com.br/dev"
           target="_blank"
           rel="noopener noreferrer"
           className="transition-opacity hover:opacity-80"
