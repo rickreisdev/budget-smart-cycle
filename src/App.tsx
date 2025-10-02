@@ -32,7 +32,6 @@ const App = () => (
                 <Route path="/recurring-purchases" element={<RecurringPurchases />} />
                 <Route path="/fixed-expenses" element={<FixedExpenses />} />
                 <Route path="/income" element={<Income />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
