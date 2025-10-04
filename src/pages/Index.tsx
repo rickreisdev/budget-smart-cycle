@@ -620,71 +620,16 @@ const Index = () => {
 
       // Process each installment group
       for (const [key, group] of installmentGroups) {
-        if (group.installments > 1) {
-          // Get the current installment number from the first transaction in the group
-          const currentInstallment = group.transactions[0]?.current_installment || 1;
-          
-          // Only continue if this is not the last installment
-          if (currentInstallment < group.installments) {
-            // For multi-installment purchases, advance to next installment
-            // First, delete all current installments
-            await supabase
-              .from('transactions')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('type', 'card')
-              .eq('amount', group.amount)
-              .like('description', `${group.baseDescription}%`)
-              .like('date', `${userProfile.current_cycle}%`);
-
-            // Then create new installments for remaining months
-            const remainingInstallments = group.installments - currentInstallment;
-            if (remainingInstallments > 0) {
-              const transactionsToInsert = [];
-              const [currentYear, currentMonth] = newCycle.split('-').map(Number);
-
-              for (let i = 0; i < remainingInstallments; i++) {
-                const targetMonth = currentMonth + i;
-                const targetYear = currentYear + Math.floor((targetMonth - 1) / 12);
-                const finalMonth = ((targetMonth - 1) % 12) + 1;
-                const dateString = `${targetYear}-${String(finalMonth).padStart(2, '0')}-01`;
-                
-                const nextInstallment = currentInstallment + 1 + i;
-                
-                transactionsToInsert.push({
-                  user_id: user.id,
-                  type: 'card',
-                  description: `${group.baseDescription} (${nextInstallment}/${group.installments})`,
-                  amount: group.amount,
-                  date: dateString,
-                  is_recurrent: false,
-                  installments: group.installments,
-                  current_installment: nextInstallment,
-                  ideal_day: group.ideal_day
-                });
-              }
-
-              if (transactionsToInsert.length > 0) {
-                await supabase
-                  .from('transactions')
-                  .insert(transactionsToInsert);
-              }
-            }
-          } else {
-            // This is the last installment, just delete it without creating new ones
-            await supabase
-              .from('transactions')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('type', 'card')
-              .eq('amount', group.amount)
-              .like('description', `${group.baseDescription}%`)
-              .like('date', `${userProfile.current_cycle}%`);
-          }
-        } else {
-          // For single installment purchases, they are already removed since they are in current cycle
-          // and we're starting a new cycle
-        }
+        // Simply delete the current cycle's installment
+        // Future installments already exist from when the purchase was created
+        await supabase
+          .from('transactions')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('type', 'card')
+          .eq('amount', group.amount)
+          .like('description', `${group.baseDescription}%`)
+          .like('date', `${userProfile.current_cycle}%`);
       }
 
       // Handle recurrent transactions for new cycle
