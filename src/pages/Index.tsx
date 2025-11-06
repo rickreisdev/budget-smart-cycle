@@ -96,6 +96,7 @@ const Index = () => {
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   const [showMonthSelectorAfterReset, setShowMonthSelectorAfterReset] = useState(false);
   const [confirmationText, setConfirmationText] = useState('');
+  const [showIncomeChoiceDialog, setShowIncomeChoiceDialog] = useState(false);
 
   // Function to format currency with Brazilian standard (comma as decimal separator)
   const formatCurrency = (value: number) => {
@@ -552,7 +553,7 @@ const Index = () => {
     }
   };
 
-  const startNewCycle = async () => {
+  const startNewCycleWithIncome = async (incomeToAdd: 'monthly_salary' | 'initial_income' | 'none') => {
     if (!user || !userProfile) return;
 
     const { availableBalance } = calculateTotals();
@@ -573,9 +574,13 @@ const Index = () => {
       updates.total_saved = userProfile.total_saved + availableBalance;
     }
 
-    // Add monthly salary to initial income if salary > 0
-    if (userProfile.monthly_salary > 0) {
-      updates.initial_income = userProfile.initial_income + userProfile.monthly_salary;
+    // Add the chosen income value
+    if (incomeToAdd === 'monthly_salary' && userProfile.monthly_salary > 0) {
+      updates.initial_income = userProfile.monthly_salary;
+    } else if (incomeToAdd === 'initial_income' && userProfile.initial_income > 0) {
+      updates.initial_income = userProfile.initial_income;
+    } else if (incomeToAdd === 'none') {
+      updates.initial_income = 0;
     }
 
     const { error } = await supabase
@@ -684,7 +689,24 @@ const Index = () => {
 
       loadUserProfile();
       loadTransactions();
+      setShowIncomeChoiceDialog(false);
       toast.success('Novo ciclo iniciado!');
+    }
+  };
+
+  const startNewCycle = () => {
+    if (!user || !userProfile) return;
+    
+    // Check if user has monthly_salary or initial_income to ask
+    const hasMonthlyIncome = userProfile.monthly_salary > 0;
+    const hasInitialIncome = userProfile.initial_income > 0;
+    
+    if (hasMonthlyIncome || hasInitialIncome) {
+      // Show dialog to choose income
+      setShowIncomeChoiceDialog(true);
+    } else {
+      // No income to add, proceed directly
+      startNewCycleWithIncome('none');
     }
   };
 
@@ -1614,6 +1636,60 @@ const Index = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Income Choice Dialog for New Cycle */}
+        <Dialog open={showIncomeChoiceDialog} onOpenChange={setShowIncomeChoiceDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Escolha a Renda para o Próximo Ciclo</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Qual valor você deseja adicionar como renda no próximo ciclo?
+              </p>
+              
+              <div className="space-y-3">
+                {userProfile?.monthly_salary && userProfile.monthly_salary > 0 && (
+                  <Button
+                    onClick={() => startNewCycleWithIncome('monthly_salary')}
+                    className="w-full justify-between"
+                    variant="outline"
+                  >
+                    <span>Salário Mensal</span>
+                    <span className="font-semibold">R$ {formatCurrency(userProfile.monthly_salary)}</span>
+                  </Button>
+                )}
+                
+                {userProfile?.initial_income && userProfile.initial_income > 0 && (
+                  <Button
+                    onClick={() => startNewCycleWithIncome('initial_income')}
+                    className="w-full justify-between"
+                    variant="outline"
+                  >
+                    <span>Receita Inicial Atual</span>
+                    <span className="font-semibold">R$ {formatCurrency(userProfile.initial_income)}</span>
+                  </Button>
+                )}
+                
+                <Button
+                  onClick={() => startNewCycleWithIncome('none')}
+                  className="w-full"
+                  variant="secondary"
+                >
+                  Não adicionar renda
+                </Button>
+              </div>
+              
+              <Button
+                onClick={() => setShowIncomeChoiceDialog(false)}
+                variant="ghost"
+                className="w-full"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Transaction Dialog */}
         <Dialog open={!!editingTransaction} onOpenChange={() => setEditingTransaction(null)}>
