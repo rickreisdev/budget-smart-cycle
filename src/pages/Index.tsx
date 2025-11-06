@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -861,25 +862,23 @@ const Index = () => {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div>
-                <Label htmlFor="initial_income">Receita Inicial (R$)</Label>
-                <Input
+                <Label htmlFor="initial_income">Receita Inicial</Label>
+                <CurrencyInput
                   id="initial_income"
-                  type="number"
                   placeholder="0,00"
-                  value={setupData.initial_income || ''}
-                  onChange={(e) => setSetupData({...setupData, initial_income: Number(e.target.value)})}
+                  value={setupData.initial_income?.toString() || ''}
+                  onValueChange={(value) => setSetupData({...setupData, initial_income: Number(value)})}
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">Valor que você possui disponível no início do ciclo</p>
               </div>
               <div>
-                <Label htmlFor="monthly_salary">Salário Mensal (R$)</Label>
-                <Input
+                <Label htmlFor="monthly_salary">Salário Mensal</Label>
+                <CurrencyInput
                   id="monthly_salary"
-                  type="number"
                   placeholder="0,00"
-                  value={setupData.monthly_salary || ''}
-                  onChange={(e) => setSetupData({...setupData, monthly_salary: Number(e.target.value)})}
+                  value={setupData.monthly_salary?.toString() || ''}
+                  onValueChange={(value) => setSetupData({...setupData, monthly_salary: Number(value)})}
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
@@ -1064,13 +1063,11 @@ const Index = () => {
                 {newTransaction.type === 'card' && !newTransaction.is_recurrent && newTransaction.installments > 1 ? (
                   <>
                     <div>
-                      <Label>Valor Total (R$)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={newTransaction.totalAmount || ''}
-                        onChange={(e) => {
-                          const totalAmount = Number(e.target.value);
+                      <Label>Valor Total</Label>
+                      <CurrencyInput
+                        value={newTransaction.totalAmount?.toString() || ''}
+                        onValueChange={(value) => {
+                          const totalAmount = Number(value);
                           const amountPerInstallment = totalAmount / newTransaction.installments;
                           setNewTransaction({
                             ...newTransaction, 
@@ -1082,13 +1079,11 @@ const Index = () => {
                       />
                     </div>
                     <div>
-                      <Label>Valor por Parcela (R$)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={newTransaction.amount || ''}
-                        onChange={(e) => {
-                          const amountPerInstallment = Number(e.target.value);
+                      <Label>Valor por Parcela</Label>
+                      <CurrencyInput
+                        value={newTransaction.amount?.toString() || ''}
+                        onValueChange={(value) => {
+                          const amountPerInstallment = Number(value);
                           const totalAmount = amountPerInstallment * newTransaction.installments;
                           setNewTransaction({
                             ...newTransaction, 
@@ -1102,12 +1097,10 @@ const Index = () => {
                   </>
                 ) : (
                   <div>
-                    <Label>Valor (R$)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newTransaction.amount || ''}
-                      onChange={(e) => setNewTransaction({...newTransaction, amount: Number(e.target.value)})}
+                    <Label>Valor</Label>
+                    <CurrencyInput
+                      value={newTransaction.amount?.toString() || ''}
+                      onValueChange={(value) => setNewTransaction({...newTransaction, amount: Number(value)})}
                       placeholder="0,00"
                     />
                   </div>
