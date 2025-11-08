@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
@@ -862,7 +864,133 @@ const Index = () => {
     link.click();
     document.body.removeChild(link);
     
-    toast.success('Transações exportadas com sucesso!');
+    toast.success('Transações exportadas em CSV com sucesso!');
+  };
+
+  const exportTransactionsToPDF = () => {
+    if (!userProfile) return;
+
+    const currentTransactions = transactions.filter(t => 
+      t.date.startsWith(userProfile.current_cycle)
+    );
+
+    if (currentTransactions.length === 0) {
+      toast.error('Não há transações para exportar neste ciclo');
+      return;
+    }
+
+    // Calculate totals
+    const totals = calculateTotals();
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPosition = 20;
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Transações', pageWidth / 2, yPosition, { align: 'center' });
+    
+    yPosition += 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Ciclo: ${userProfile.current_cycle}`, pageWidth / 2, yPosition, { align: 'center' });
+    
+    yPosition += 15;
+
+    // Summary section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo', 14, yPosition);
+    yPosition += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Renda Total: R$ ${formatCurrency(totals.totalIncome)}`, 14, yPosition);
+    yPosition += 6;
+    doc.text(`Despesas Fixas: R$ ${formatCurrency(totals.totalFixed)}`, 14, yPosition);
+    yPosition += 6;
+    doc.text(`Cartão: R$ ${formatCurrency(totals.totalCard)}`, 14, yPosition);
+    yPosition += 6;
+    doc.text(`Avulso: R$ ${formatCurrency(totals.totalCasual)}`, 14, yPosition);
+    yPosition += 6;
+    doc.text(`Total de Gastos: R$ ${formatCurrency(totals.totalExpenses)}`, 14, yPosition);
+    yPosition += 6;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Saldo Disponível: R$ ${formatCurrency(totals.availableBalance)}`, 14, yPosition);
+    yPosition += 15;
+
+    // Transaction types
+    const typeMap = {
+      income: 'Renda Extra',
+      fixed: 'Despesa Fixa',
+      card: 'Cartão',
+      casual: 'Avulso'
+    };
+
+    const groupedTransactions = {
+      income: currentTransactions.filter(t => t.type === 'income'),
+      fixed: currentTransactions.filter(t => t.type === 'fixed'),
+      card: currentTransactions.filter(t => t.type === 'card'),
+      casual: currentTransactions.filter(t => t.type === 'casual')
+    };
+
+    Object.entries(groupedTransactions).forEach(([type, txs]) => {
+      if (txs.length === 0) return;
+
+      // Check if we need a new page
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      // Section title
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(typeMap[type as keyof typeof typeMap], 14, yPosition);
+      yPosition += 8;
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+
+      txs.forEach(t => {
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        const installmentInfo = t.installments && t.installments > 1 
+          ? ` (${t.current_installment}/${t.installments})`
+          : '';
+        
+        const recurrentMark = t.is_recurrent ? ' [R]' : '';
+        
+        doc.text(`• ${t.description}${installmentInfo}${recurrentMark}`, 16, yPosition);
+        yPosition += 5;
+        doc.text(`  R$ ${formatCurrency(t.amount)} - ${formatDateToBrazilian(t.date)}`, 16, yPosition);
+        yPosition += 7;
+      });
+
+      yPosition += 5;
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save(`transacoes_${userProfile.current_cycle}.pdf`);
+    toast.success('Transações exportadas em PDF com sucesso!');
   };
 
   const handleMonthSelectedAfterReset = async (selectedMonth: string) => {
@@ -1236,14 +1364,27 @@ const Index = () => {
             </DialogContent>
           </Dialog>
 
-          <Button 
-            onClick={exportTransactionsToCSV}
-            variant="outline"
-            className="border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportTransactionsToCSV}>
+                <FileText className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportTransactionsToPDF}>
+                <FileText className="h-4 w-4 mr-2" />
+                Exportar PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button 
             onClick={() => setShowHistory(!showHistory)}
