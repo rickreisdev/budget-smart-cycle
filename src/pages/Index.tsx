@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -802,6 +802,69 @@ const Index = () => {
     setShowMonthSelectorAfterReset(true);
   };
 
+  const exportTransactionsToCSV = () => {
+    if (!userProfile) return;
+
+    // Filter transactions from current cycle
+    const currentTransactions = transactions.filter(t => 
+      t.date.startsWith(userProfile.current_cycle)
+    );
+
+    if (currentTransactions.length === 0) {
+      toast.error('Não há transações para exportar neste ciclo');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = ['Tipo', 'Descrição', 'Valor', 'Data', 'Recorrente', 'Parcela', 'Dia Ideal'];
+    
+    // Map transaction types to Portuguese
+    const typeMap = {
+      income: 'Renda Extra',
+      fixed: 'Despesa Fixa',
+      card: 'Cartão',
+      casual: 'Avulso'
+    };
+
+    // Convert transactions to CSV rows
+    const rows = currentTransactions.map(t => {
+      const installmentInfo = t.installments && t.installments > 1 
+        ? `${t.current_installment}/${t.installments}`
+        : '-';
+      
+      return [
+        typeMap[t.type] || t.type,
+        t.description,
+        `R$ ${formatCurrency(t.amount)}`,
+        formatDateToBrazilian(t.date),
+        t.is_recurrent ? 'Sim' : 'Não',
+        installmentInfo,
+        t.ideal_day || '-'
+      ];
+    });
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transacoes_${userProfile.current_cycle}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Transações exportadas com sucesso!');
+  };
+
   const handleMonthSelectedAfterReset = async (selectedMonth: string) => {
     if (!user || !userProfile) return;
 
@@ -1044,7 +1107,7 @@ const Index = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Dialog open={showAddTransactionDialog} onOpenChange={setShowAddTransactionDialog}>
             <DialogTrigger asChild>
               <Button className="bg-green-600 hover:bg-green-700">
@@ -1172,6 +1235,15 @@ const Index = () => {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Button 
+            onClick={exportTransactionsToCSV}
+            variant="outline"
+            className="border-blue-600 text-blue-600 hover:bg-blue-50"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
 
           <Button 
             onClick={() => setShowHistory(!showHistory)}
