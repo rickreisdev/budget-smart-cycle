@@ -38,11 +38,16 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value
       
+      console.log('CurrencyInput - Input value:', inputValue)
+      
       // Remove tudo que não é número
       const numbers = inputValue.replace(/\D/g, "")
       
+      console.log('CurrencyInput - Numbers extracted:', numbers)
+      
       // Se não houver números, limpa o campo
       if (!numbers) {
+        console.log('CurrencyInput - No numbers, clearing field')
         setDisplayValue("")
         if (onValueChange) {
           onValueChange("")
@@ -52,10 +57,12 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       
       // Formata e exibe
       const formatted = formatCurrency(numbers)
+      console.log('CurrencyInput - Formatted:', formatted)
       setDisplayValue(formatted)
       
       // Retorna o valor numérico sem formatação
       const numericValue = (parseInt(numbers, 10) / 100).toString()
+      console.log('CurrencyInput - Numeric value:', numericValue)
       
       if (onValueChange) {
         onValueChange(numericValue)
