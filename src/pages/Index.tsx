@@ -1079,8 +1079,8 @@ const Index = () => {
                 <CurrencyInput
                   id="initial_income"
                   placeholder="0,00"
-                  value={setupData.initial_income?.toString() || ''}
-                  onValueChange={(value) => setSetupData({...setupData, initial_income: Number(value)})}
+                  value={setupData.initial_income ? setupData.initial_income.toString() : ''}
+                  onValueChange={(value) => setSetupData({...setupData, initial_income: Number(value) || 0})}
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">Valor que você possui disponível no início do ciclo</p>
@@ -1090,8 +1090,8 @@ const Index = () => {
                 <CurrencyInput
                   id="monthly_salary"
                   placeholder="0,00"
-                  value={setupData.monthly_salary?.toString() || ''}
-                  onValueChange={(value) => setSetupData({...setupData, monthly_salary: Number(value)})}
+                  value={setupData.monthly_salary ? setupData.monthly_salary.toString() : ''}
+                  onValueChange={(value) => setSetupData({...setupData, monthly_salary: Number(value) || 0})}
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
@@ -1278,9 +1278,9 @@ const Index = () => {
                     <div>
                       <Label>Valor Total</Label>
                       <CurrencyInput
-                        value={newTransaction.totalAmount?.toString() || ''}
+                        value={newTransaction.totalAmount ? newTransaction.totalAmount.toString() : ''}
                         onValueChange={(value) => {
-                          const totalAmount = Number(value);
+                          const totalAmount = Number(value) || 0;
                           const amountPerInstallment = totalAmount / newTransaction.installments;
                           setNewTransaction({
                             ...newTransaction, 
@@ -1294,9 +1294,9 @@ const Index = () => {
                     <div>
                       <Label>Valor por Parcela</Label>
                       <CurrencyInput
-                        value={newTransaction.amount?.toString() || ''}
+                        value={newTransaction.amount ? newTransaction.amount.toString() : ''}
                         onValueChange={(value) => {
-                          const amountPerInstallment = Number(value);
+                          const amountPerInstallment = Number(value) || 0;
                           const totalAmount = amountPerInstallment * newTransaction.installments;
                           setNewTransaction({
                             ...newTransaction, 
@@ -1312,8 +1312,8 @@ const Index = () => {
                   <div>
                     <Label>Valor</Label>
                     <CurrencyInput
-                      value={newTransaction.amount?.toString() || ''}
-                      onValueChange={(value) => setNewTransaction({...newTransaction, amount: Number(value)})}
+                      value={newTransaction.amount ? newTransaction.amount.toString() : ''}
+                      onValueChange={(value) => setNewTransaction({...newTransaction, amount: Number(value) || 0})}
                       placeholder="0,00"
                     />
                   </div>
