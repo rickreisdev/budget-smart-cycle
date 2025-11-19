@@ -16,7 +16,10 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       if (value !== undefined && value !== "") {
         const numValue = Number(value);
         if (numValue > 0) {
-          setDisplayValue(formatCurrency((numValue * 100).toString()))
+          // O valor já vem como decimal (ex: "0.50" para R$ 0,50)
+          // Multiplica por 100 para converter para centavos antes de formatar
+          const cents = Math.round(numValue * 100);
+          setDisplayValue(formatCurrency(cents.toString()))
         } else {
           setDisplayValue("")
         }
