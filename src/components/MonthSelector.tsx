@@ -69,26 +69,28 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4 flex items-center justify-center">
-      <div className="max-w-md w-full">
-        <Card className="border-green-200 shadow-lg">
-          <CardHeader className="text-center bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
-            <CardTitle className="text-xl flex items-center justify-center gap-2">
-              <Calendar className="h-5 w-5" />
+    <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+      <div className="max-w-md w-full animate-fade-in">
+        <Card className="overflow-hidden border-0 shadow-xl">
+          <CardHeader className="text-center gradient-primary text-primary-foreground pb-8 pt-10">
+            <div className="mx-auto w-16 h-16 bg-primary-foreground/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+              <Calendar className="h-8 w-8" />
+            </div>
+            <CardTitle className="text-xl font-semibold tracking-tight">
               {title}
             </CardTitle>
-            <p className="text-green-100 text-sm">{description}</p>
+            <p className="text-primary-foreground/80 text-sm mt-2">{description}</p>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-6 space-y-6 -mt-4 bg-card rounded-t-3xl relative">
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Mês de Controle Financeiro
               </label>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-12">
                   <SelectValue placeholder="Selecione o mês atual" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-border">
                   {monthOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -96,7 +98,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Este será o seu ciclo atual de controle financeiro. Você poderá alterar depois se necessário.
               </p>
             </div>
@@ -104,7 +106,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({
             <Button 
               onClick={handleConfirm}
               disabled={!selectedMonth || loading}
-              className="w-full bg-green-600 hover:bg-green-700 py-3"
+              className="w-full h-12 text-base font-medium shadow-glow"
               size="lg"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
