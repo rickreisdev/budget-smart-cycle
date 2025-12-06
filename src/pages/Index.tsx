@@ -1066,11 +1066,8 @@ const Index = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <span className="text-muted-foreground text-sm">Carregando...</span>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-green-600">Carregando...</div>
       </div>
     );
   }
@@ -1086,48 +1083,46 @@ const Index = () => {
 
   if (isFirstTime && userProfile) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto pt-8 animate-fade-in">
-          <Card className="overflow-hidden shadow-xl border-0">
-            <CardHeader className="text-center gradient-primary text-primary-foreground pb-8 pt-10">
-              <div className="mx-auto w-16 h-16 bg-primary-foreground/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                <Wallet className="h-8 w-8" />
-              </div>
-              <CardTitle className="text-2xl font-semibold tracking-tight">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
+        <div className="max-w-md mx-auto pt-8">
+          <Card className="border-green-200 shadow-lg">
+            <CardHeader className="text-center bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
+              <CardTitle className="text-2xl flex items-center justify-center gap-2">
+                <Wallet className="h-6 w-6" />
                 Budget Control
               </CardTitle>
-              <p className="text-primary-foreground/80 mt-2">Bem-vindo, {userProfile.username}!</p>
+              <p className="text-green-100">Bem-vindo, {userProfile.username}!</p>
             </CardHeader>
-            <CardContent className="p-6 space-y-5 -mt-4 bg-card rounded-t-3xl relative">
-              <div className="space-y-2">
-                <Label htmlFor="initial_income" className="text-sm font-medium">Receita Inicial</Label>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="initial_income">Receita Inicial</Label>
                 <CurrencyInput
                   id="initial_income"
                   placeholder="0,00"
                   value={setupData.initial_income ? setupData.initial_income.toString() : ''}
                   onValueChange={(value) => setSetupData({...setupData, initial_income: Number(value) || 0})}
-                  className="h-12"
+                  className="mt-1"
                 />
-                <p className="text-xs text-muted-foreground">Valor que você possui disponível no início do ciclo</p>
+                <p className="text-xs text-gray-500 mt-1">Valor que você possui disponível no início do ciclo</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="monthly_salary" className="text-sm font-medium">Salário Mensal</Label>
+              <div>
+                <Label htmlFor="monthly_salary">Salário Mensal</Label>
                 <CurrencyInput
                   id="monthly_salary"
                   placeholder="0,00"
                   value={setupData.monthly_salary ? setupData.monthly_salary.toString() : ''}
                   onValueChange={(value) => setSetupData({...setupData, monthly_salary: Number(value) || 0})}
-                  className="h-12"
+                  className="mt-1"
                 />
-                <p className="text-xs text-muted-foreground">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
+                <p className="text-xs text-gray-500 mt-1">Valor que será adicionado a cada novo ciclo (pode ser zero)</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="idealDay" className="text-sm font-medium">Dia Ideal do Cartão</Label>
+              <div>
+                <Label htmlFor="idealDay">Dia Ideal do Cartão</Label>
                 <Select 
                   value={setupData.ideal_day.toString()} 
                   onValueChange={(value) => setSetupData({...setupData, ideal_day: Number(value)})}
                 >
-                  <SelectTrigger className="h-12">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1139,7 +1134,7 @@ const Index = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={setupInitialData} className="w-full h-12 text-base font-medium shadow-glow">
+              <Button onClick={setupInitialData} className="w-full bg-green-600 hover:bg-green-700">
                 Começar
               </Button>
             </CardContent>
@@ -1150,29 +1145,25 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24">
-      <div className="max-w-md mx-auto space-y-4 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
+      <div className="max-w-md mx-auto space-y-4">
         {/* Header */}
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="gradient-primary text-primary-foreground py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary-foreground/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Wallet className="h-5 w-5" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-semibold tracking-tight">Budget Control</CardTitle>
-                  <p className="text-primary-foreground/80 text-sm flex items-center gap-1">
-                    <User className="h-3 w-3" />
-                    {userProfile?.username}
-                  </p>
-                </div>
-              </div>
+        <Card className="border-green-200 shadow-lg">
+          <CardHeader className="text-center bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardTitle className="text-xl flex items-center justify-center gap-2">
+              <Wallet className="h-5 w-5" />
+              Budget Control
+            </CardTitle>
+            <div className="flex items-center justify-between text-sm text-green-100">
+              <span className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {userProfile?.username}
+              </span>
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={handleSignOut}
-                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 rounded-xl"
+                className="text-green-100 hover:text-white hover:bg-green-600"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -1181,55 +1172,47 @@ const Index = () => {
         </Card>
 
         {/* Navigation Menu */}
-        <Card className="border-0 shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium text-foreground">Gerenciar por Categoria</CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4">
+          <CardContent className="p-4">
             <div className="grid grid-cols-4 gap-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/income')}
-                className="flex flex-col items-center p-3 h-auto bg-success/5 hover:bg-success/10 border border-success/20 rounded-xl transition-all"
+                className="flex flex-col items-center p-3 h-auto"
               >
-                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center mb-1.5">
-                  <TrendingUp className="h-4 w-4 text-success" />
-                </div>
-                <span className="text-xs font-medium text-foreground">Rendas</span>
+                <TrendingUp className="h-4 w-4 mb-1" />
+                <span className="text-xs">Rendas</span>
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/instalment-purchases')}
-                className="flex flex-col items-center p-3 h-auto bg-info/5 hover:bg-info/10 border border-info/20 rounded-xl transition-all"
+                className="flex flex-col items-center p-3 h-auto"
               >
-                <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center mb-1.5">
-                  <CreditCard className="h-4 w-4 text-info" />
-                </div>
-                <span className="text-xs font-medium text-foreground">Parceladas</span>
+                <CreditCard className="h-4 w-4 mb-1" />
+                <span className="text-xs">Parceladas</span>
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/recurring-purchases')}
-                className="flex flex-col items-center p-3 h-auto bg-warning/5 hover:bg-warning/10 border border-warning/20 rounded-xl transition-all"
+                className="flex flex-col items-center p-3 h-auto"
               >
-                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center mb-1.5">
-                  <RotateCcw className="h-4 w-4 text-warning" />
-                </div>
-                <span className="text-xs font-medium text-foreground">Recorrentes</span>
+                <RotateCcw className="h-4 w-4 mb-1" />
+                <span className="text-xs">Recorrentes</span>
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/fixed-expenses')}
-                className="flex flex-col items-center p-3 h-auto bg-destructive/5 hover:bg-destructive/10 border border-destructive/20 rounded-xl transition-all"
+                className="flex flex-col items-center p-3 h-auto"
               >
-                <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center mb-1.5">
-                  <Wallet className="h-4 w-4 text-destructive" />
-                </div>
-                <span className="text-xs font-medium text-foreground">Fixos</span>
+                <Wallet className="h-4 w-4 mb-1" />
+                <span className="text-xs">Fixos</span>
               </Button>
             </div>
           </CardContent>
@@ -1237,39 +1220,35 @@ const Index = () => {
 
         {/* Balance Overview */}
         <div className="grid grid-cols-2 gap-3">
-          <Card className="border-0 shadow-md overflow-hidden">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-br from-success/10 to-success/5 p-4">
-                <div className="text-xs font-medium text-muted-foreground mb-1">Saldo Disponível</div>
-                <div className="text-2xl font-bold text-success tracking-tight">
-                  R$ {formatCurrency(totals.availableBalance)}
-                </div>
+          <Card className="border-green-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                R$ {formatCurrency(totals.availableBalance)}
               </div>
+              <div className="text-sm text-gray-600">Saldo Disponível</div>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-md overflow-hidden">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-br from-info/10 to-info/5 p-4">
-                <div className="text-xs font-medium text-muted-foreground mb-1">Total Guardado</div>
-                <div className="text-2xl font-bold text-info tracking-tight">
-                  R$ {formatCurrency(userProfile?.total_saved || 0)}
-                </div>
+          <Card className="border-blue-200">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                R$ {formatCurrency(userProfile?.total_saved || 0)}
               </div>
+              <div className="text-sm text-gray-600">Total Guardado</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Stats */}
-        <Card className="border-0 shadow-md">
+        <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 text-center border-r border-border">
-                <div className="text-xs text-muted-foreground mb-1">Renda</div>
-                <span className="text-success font-semibold">R$ {formatCurrency(totals.totalIncome)}</span>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Renda:</span>
+                <span className="text-green-600 font-medium">R$ {formatCurrency(totals.totalIncome)}</span>
               </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-muted-foreground mb-1">Gastos</div>
-                <span className="text-destructive font-semibold">R$ {formatCurrency(totals.totalExpenses)}</span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Gastos Totais:</span>
+                <span className="text-red-600 font-medium">R$ {formatCurrency(totals.totalExpenses)}</span>
               </div>
             </div>
           </CardContent>
@@ -1279,12 +1258,12 @@ const Index = () => {
         <div className="grid grid-cols-3 gap-3">
           <Dialog open={showAddTransactionDialog} onOpenChange={setShowAddTransactionDialog}>
             <DialogTrigger asChild>
-              <Button className="shadow-glow h-11 font-medium">
+              <Button className="bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-sm rounded-2xl">
+            <DialogContent className="max-w-sm">
               <DialogHeader>
                 <DialogTitle>Nova Transação</DialogTitle>
               </DialogHeader>
@@ -1409,18 +1388,18 @@ const Index = () => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline"
-                className="h-11 font-medium border-info/30 text-info hover:bg-info/5"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-card border-border">
-              <DropdownMenuItem onClick={exportTransactionsToCSV} className="cursor-pointer">
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportTransactionsToCSV}>
                 <FileText className="h-4 w-4 mr-2" />
                 Exportar CSV
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportTransactionsToPDF} className="cursor-pointer">
+              <DropdownMenuItem onClick={exportTransactionsToPDF}>
                 <FileText className="h-4 w-4 mr-2" />
                 Exportar PDF
               </DropdownMenuItem>
@@ -1430,7 +1409,7 @@ const Index = () => {
           <Button 
             onClick={() => setShowHistory(!showHistory)}
             variant="outline"
-            className="h-11 font-medium border-primary/30 text-primary hover:bg-primary/5"
+            className="border-green-600 text-green-600 hover:bg-green-50"
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Histórico
@@ -1439,16 +1418,16 @@ const Index = () => {
 
         {/* Transaction History */}
         {showHistory && (
-          <Card className="border-0 shadow-md animate-fade-in">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center justify-between">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
                 <span>Transações do Mês</span>
-                <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                <span className="text-sm font-normal text-gray-500">
                   {currentCycleTransactions.length} total
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-3">
+            <CardContent className="p-4 space-y-3">
               {/* Resumo dos valores filtrados */}
               {(() => {
                 const filteredTransactions = currentCycleTransactions;
@@ -1461,22 +1440,22 @@ const Index = () => {
                 const netTotal = totalIncome - totalExpenses;
                 
                 return (
-                  <div className="bg-info/5 p-4 rounded-xl border border-info/20">
-                    <div className="text-sm font-medium text-foreground mb-3">Resumo Filtrado</div>
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="text-sm font-medium text-blue-900 mb-2">Resumo dos Valores Filtrados</div>
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="text-center">
-                        <div className="text-success font-semibold">+R$ {formatCurrency(totalIncome)}</div>
-                        <div className="text-muted-foreground">Rendas</div>
+                        <div className="text-green-600 font-medium">+R$ {formatCurrency(totalIncome)}</div>
+                        <div className="text-gray-500">Rendas</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-destructive font-semibold">-R$ {formatCurrency(totalExpenses)}</div>
-                        <div className="text-muted-foreground">Gastos</div>
+                        <div className="text-red-600 font-medium">-R$ {formatCurrency(totalExpenses)}</div>
+                        <div className="text-gray-500">Gastos</div>
                       </div>
                       <div className="text-center">
-                        <div className={`font-semibold ${netTotal >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        <div className={`font-medium ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {netTotal >= 0 ? '+' : ''}R$ {formatCurrency(Math.abs(netTotal))}
                         </div>
-                        <div className="text-muted-foreground">Líquido</div>
+                        <div className="text-gray-500">Líquido</div>
                       </div>
                     </div>
                   </div>
@@ -1571,22 +1550,22 @@ const Index = () => {
               </Accordion>
 
               {visibleTransactionsList.map((transaction) => (
-                <div key={transaction.id} className="flex justify-between items-start p-3 bg-muted/50 rounded-xl border border-border/50 transition-all hover:bg-muted/80">
+                <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-foreground">{transaction.description}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="font-medium text-sm">{transaction.description}</div>
+                    <div className="text-xs text-gray-500">
                       {getTransactionTypeInPortuguese(transaction.type)}
                     </div>
                     {transaction.created_at && (
-                      <div className="text-xs text-muted-foreground/70 mt-1">
+                      <div className="text-xs text-gray-400 mt-1">
                         Adicionado em: {formatDateForDisplay(transaction.created_at)}
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 ml-2">
                     <div className="text-right">
-                      <span className={`font-semibold text-sm ${
-                        transaction.type === 'income' ? 'text-success' : 'text-destructive'
+                      <span className={`font-medium text-sm ${
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
                       </span>
@@ -1604,7 +1583,7 @@ const Index = () => {
                             installments: transaction.installments || 1
                           });
                         }}
-                        className="h-8 w-8 p-0 text-info hover:text-info hover:bg-info/10 flex-shrink-0 rounded-lg"
+                        className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
@@ -1612,7 +1591,7 @@ const Index = () => {
                         size="sm"
                         variant="ghost"
                         onClick={() => setTransactionToDelete(transaction.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0 rounded-lg"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
