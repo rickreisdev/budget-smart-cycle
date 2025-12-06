@@ -150,8 +150,28 @@ const Index = () => {
       toast.error('Erro ao carregar perfil');
     } else if (data) {
       setUserProfile(data);
-      // Check if it's first time based on new fields
-      setIsFirstTime(data.initial_income === 0 && data.monthly_salary === 0);
+      // Check if it's first time: user never configured initial income AND never had a salary
+      // A user who started a cycle with "none" income will have current_cycle set but may have 0 income
+      // So we need to check if the user has ever had any income configuration or transactions
+      const hasEverConfiguredIncome = data.initial_income > 0 || data.monthly_salary > 0;
+      
+      // If user has no income configured but has a current_cycle, they may have chosen "no income"
+      // In that case, check if they have any transactions to determine if they've used the app before
+      if (!hasEverConfiguredIncome && data.current_cycle) {
+        // Check if user has any transactions (means they've used the app)
+        supabase
+          .from('transactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', data.id)
+          .then(({ count }) => {
+            // If user has transactions, they're not first time
+            // If current_cycle differs from initial default, they're not first time
+            const isFirstTimeUser = (count === 0 || count === null);
+            setIsFirstTime(isFirstTimeUser);
+          });
+      } else {
+        setIsFirstTime(!hasEverConfiguredIncome);
+      }
     }
     setLoading(false);
   };
