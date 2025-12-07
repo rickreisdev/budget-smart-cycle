@@ -299,23 +299,27 @@ const InstalmentPurchases = () => {
   };
 
   if (loading) {
-    return <div className="p-4">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-primary animate-pulse-soft text-lg font-medium">Carregando...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen p-4 pb-24">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-4 animate-fade-in">
+          <Button variant="ghost" onClick={() => navigate('/')} className="hover-scale">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">Compras Parceladas</h1>
         </div>
 
-        <Card>
+        <Card className="animate-fade-in stagger-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
+              <Filter className="h-5 w-5 text-muted-foreground" />
               Filtros
             </CardTitle>
           </CardHeader>
@@ -333,25 +337,25 @@ const InstalmentPurchases = () => {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in stagger-2">
+          <Card className="hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-5 w-5 text-accent" />
                 Total em Compras Parceladas
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">
+              <div className="text-3xl font-bold text-accent">
                 R$ {formatCurrency(calculateTotal())}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-5 w-5 text-destructive" />
                 Parcelas do Ciclo Atual
               </CardTitle>
             </CardHeader>
@@ -366,7 +370,7 @@ const InstalmentPurchases = () => {
           </Card>
         </div>
 
-        <Card>
+        <Card className="animate-fade-in stagger-3">
           <CardHeader>
             <CardTitle>Todas as Compras Parceladas</CardTitle>
           </CardHeader>

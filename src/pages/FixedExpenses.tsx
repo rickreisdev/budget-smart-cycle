@@ -133,34 +133,38 @@ const FixedExpenses = () => {
   };
 
   if (loading) {
-    return <div className="p-4">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-primary animate-pulse-soft text-lg font-medium">Carregando...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen p-4 pb-24">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-4 animate-fade-in">
+          <Button variant="ghost" onClick={() => navigate('/')} className="hover-scale">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">Gastos Fixos</h1>
         </div>
 
-        <Card>
+        <Card className="animate-fade-in stagger-1 hover-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-5 w-5" />
+              <Wallet className="h-5 w-5 text-primary" />
               Total em Gastos Fixos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-primary">
+            <div className="text-3xl font-bold text-destructive">
               R$ {formatCurrency(calculateTotal())}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-fade-in stagger-2">
           <CardHeader>
             <CardTitle>Todos os Gastos Fixos</CardTitle>
           </CardHeader>
@@ -171,10 +175,11 @@ const FixedExpenses = () => {
               </p>
             ) : (
               <div className="space-y-2">
-                {transactions.map((transaction) => (
+                {transactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-all duration-200 hover-scale animate-fade-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
                   >
                     <div className="flex-1">
                       <div className="font-medium">{transaction.description}</div>
