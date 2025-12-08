@@ -34,6 +34,16 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
+    /* Transaction type colors */
+    --income: 152 55% 45%;
+    --income-foreground: 0 0% 100%;
+    --installment: 262 52% 55%;
+    --installment-foreground: 0 0% 100%;
+    --recurring: 199 89% 48%;
+    --recurring-foreground: 0 0% 100%;
+    --fixed: 25 95% 53%;
+    --fixed-foreground: 0 0% 100%;
+
     --border: 150 12% 88%;
     --input: 150 12% 88%;
     --ring: 152 60% 42%;
@@ -96,6 +106,16 @@
 
     --warning: 38 92% 55%;
     --warning-foreground: 0 0% 100%;
+
+    /* Transaction type colors - Dark mode */
+    --income: 152 60% 50%;
+    --income-foreground: 0 0% 100%;
+    --installment: 262 55% 60%;
+    --installment-foreground: 0 0% 100%;
+    --recurring: 199 89% 55%;
+    --recurring-foreground: 0 0% 100%;
+    --fixed: 25 95% 58%;
+    --fixed-foreground: 0 0% 100%;
 
     --border: 160 18% 20%;
     --input: 160 18% 20%;
