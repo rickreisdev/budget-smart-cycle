@@ -153,12 +153,12 @@ const FixedExpenses = () => {
         <Card className="animate-fade-in stagger-1 hover-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-primary" />
+              <Wallet className="h-5 w-5 text-fixed" />
               Total em Gastos Fixos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-destructive">
+            <div className="text-3xl font-bold text-fixed">
               R$ {formatCurrency(calculateTotal())}
             </div>
           </CardContent>
@@ -189,7 +189,7 @@ const FixedExpenses = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-destructive">
+                      <span className="font-semibold text-fixed">
                         R$ {formatCurrency(transaction.amount)}
                       </span>
                       <Button

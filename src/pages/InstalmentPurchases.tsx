@@ -340,13 +340,13 @@ const InstalmentPurchases = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in stagger-2">
           <Card className="hover-lift">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-accent" />
+            <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-installment" />
                 Total em Compras Parceladas
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-accent">
+              <div className="text-3xl font-bold text-installment">
                 R$ {formatCurrency(calculateTotal())}
               </div>
             </CardContent>
@@ -392,7 +392,7 @@ const InstalmentPurchases = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-destructive">
+                          <span className="font-semibold text-installment">
                             R$ {formatCurrency(group.totalAmount)}
                           </span>
                           <Button
@@ -450,7 +450,7 @@ const InstalmentPurchases = () => {
                                 {formatDateToBrazilian(transaction.date)}
                               </div>
                             </div>
-                            <span className="font-semibold text-destructive">
+                            <span className="font-semibold text-installment">
                               R$ {formatCurrency(transaction.amount)}
                             </span>
                           </div>

@@ -44,6 +44,22 @@ export default {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
 				},
+				income: {
+					DEFAULT: 'hsl(var(--income))',
+					foreground: 'hsl(var(--income-foreground))'
+				},
+				installment: {
+					DEFAULT: 'hsl(var(--installment))',
+					foreground: 'hsl(var(--installment-foreground))'
+				},
+				recurring: {
+					DEFAULT: 'hsl(var(--recurring))',
+					foreground: 'hsl(var(--recurring-foreground))'
+				},
+				fixed: {
+					DEFAULT: 'hsl(var(--fixed))',
+					foreground: 'hsl(var(--fixed-foreground))'
+				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'

@@ -1184,7 +1184,7 @@ const Index = () => {
                 onClick={() => navigate('/income')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <TrendingUp className="h-4 w-4 mb-1 text-success group-hover:scale-110 transition-transform" />
+                <TrendingUp className="h-4 w-4 mb-1 text-income group-hover:scale-110 transition-transform" />
                 <span className="text-xs">Rendas</span>
               </Button>
               <Button
@@ -1193,7 +1193,7 @@ const Index = () => {
                 onClick={() => navigate('/instalment-purchases')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <CreditCard className="h-4 w-4 mb-1 text-accent group-hover:scale-110 transition-transform" />
+                <CreditCard className="h-4 w-4 mb-1 text-installment group-hover:scale-110 transition-transform" />
                 <span className="text-xs">Parceladas</span>
               </Button>
               <Button
@@ -1202,7 +1202,7 @@ const Index = () => {
                 onClick={() => navigate('/recurring-purchases')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <RotateCcw className="h-4 w-4 mb-1 text-warning group-hover:scale-110 transition-transform" />
+                <RotateCcw className="h-4 w-4 mb-1 text-recurring group-hover:scale-110 transition-transform" />
                 <span className="text-xs">Recorrentes</span>
               </Button>
               <Button
@@ -1211,7 +1211,7 @@ const Index = () => {
                 onClick={() => navigate('/fixed-expenses')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <Wallet className="h-4 w-4 mb-1 text-primary group-hover:scale-110 transition-transform" />
+                <Wallet className="h-4 w-4 mb-1 text-fixed group-hover:scale-110 transition-transform" />
                 <span className="text-xs">Fixos</span>
               </Button>
             </div>
@@ -1242,9 +1242,9 @@ const Index = () => {
         <Card className="animate-fade-in stagger-3">
           <CardContent className="p-4">
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center p-2 rounded-lg bg-success/5 hover:bg-success/10 transition-colors">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-income/5 hover:bg-income/10 transition-colors">
                 <span className="text-muted-foreground">Renda:</span>
-                <span className="text-success font-semibold">R$ {formatCurrency(totals.totalIncome)}</span>
+                <span className="text-income font-semibold">R$ {formatCurrency(totals.totalIncome)}</span>
               </div>
               <div className="flex justify-between items-center p-2 rounded-lg bg-destructive/5 hover:bg-destructive/10 transition-colors">
                 <span className="text-muted-foreground">Gastos Totais:</span>

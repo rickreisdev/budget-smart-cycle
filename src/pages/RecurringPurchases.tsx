@@ -163,12 +163,12 @@ const RecurringPurchases = () => {
         <Card className="animate-fade-in stagger-1 hover-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <RotateCcw className="h-5 w-5 text-warning" />
+              <RotateCcw className="h-5 w-5 text-recurring" />
               Total em Compras Recorrentes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-warning">
+            <div className="text-3xl font-bold text-recurring">
               R$ {formatCurrency(calculateTotal())}
             </div>
           </CardContent>
@@ -198,7 +198,7 @@ const RecurringPurchases = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-destructive">
+                      <span className="font-semibold text-recurring">
                         R$ {formatCurrency(transaction.amount)}
                       </span>
                       <Button

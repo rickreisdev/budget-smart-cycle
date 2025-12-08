@@ -154,12 +154,12 @@ const Income = () => {
         <Card className="animate-fade-in stagger-1 hover-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-success" />
+              <TrendingUp className="h-5 w-5 text-income" />
               Total em Rendas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-success">
+            <div className="text-3xl font-bold text-income">
               R$ {formatCurrency(calculateTotal())}
             </div>
           </CardContent>
@@ -189,7 +189,7 @@ const Income = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-success">
+                      <span className="font-semibold text-income">
                         R$ {formatCurrency(transaction.amount)}
                       </span>
                       <Button
