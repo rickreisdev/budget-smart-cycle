@@ -1552,9 +1552,9 @@ const Index = () => {
               {visibleTransactionsList.map((transaction) => {
                 // Define color based on transaction type
                 const getTypeColor = (type: Transaction['type'], isRecurrent?: boolean) => {
-                  if (type === 'income') return 'bg-income';
-                  if (type === 'fixed') return 'bg-fixed';
-                  if (type === 'card') return isRecurrent ? 'bg-recurring' : 'bg-installment';
+                  if (type === 'income') return 'bg-transaction-income';
+                  if (type === 'fixed') return 'bg-transaction-fixed';
+                  if (type === 'card') return isRecurrent ? 'bg-transaction-recurring' : 'bg-transaction-installment';
                   return 'bg-muted-foreground'; // casual
                 };
 
@@ -1577,7 +1577,7 @@ const Index = () => {
                     <div className="flex items-center gap-2 ml-2">
                       <div className="text-right">
                         <span className={`font-medium text-sm ${
-                          transaction.type === 'income' ? 'text-income' : 'text-red-600'
+                          transaction.type === 'income' ? 'text-transaction-income' : 'text-red-600'
                         }`}>
                           {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
                         </span>
