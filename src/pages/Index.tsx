@@ -1549,56 +1549,69 @@ const Index = () => {
                 </AccordionItem>
               </Accordion>
 
-              {visibleTransactionsList.map((transaction) => (
-                <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{transaction.description}</div>
-                    <div className="text-xs text-gray-500">
-                      {getTransactionTypeInPortuguese(transaction.type)}
-                    </div>
-                    {transaction.created_at && (
-                      <div className="text-xs text-gray-400 mt-1">
-                        Adicionado em: {formatDateForDisplay(transaction.created_at)}
+              {visibleTransactionsList.map((transaction) => {
+                // Define color based on transaction type
+                const getTypeColor = (type: Transaction['type'], isRecurrent?: boolean) => {
+                  if (type === 'income') return 'bg-transaction-income';
+                  if (type === 'fixed') return 'bg-transaction-fixed';
+                  if (type === 'card') return isRecurrent ? 'bg-transaction-recurring' : 'bg-transaction-installment';
+                  return 'bg-muted-foreground'; // casual
+                };
+
+                return (
+                  <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
+                    {/* Color indicator */}
+                    <div className={`w-1 self-stretch rounded-full mr-3 ${getTypeColor(transaction.type, transaction.is_recurrent)}`} />
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{transaction.description}</div>
+                      <div className="text-xs text-gray-500">
+                        {getTransactionTypeInPortuguese(transaction.type)}
+                        {transaction.type === 'card' && transaction.is_recurrent && ' (Recorrente)'}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <div className="text-right">
-                      <span className={`font-medium text-sm ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
-                      </span>
+                      {transaction.created_at && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          Adicionado em: {formatDateForDisplay(transaction.created_at)}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setEditingTransaction(transaction);
-                          setEditTransaction({
-                            description: transaction.description.replace(/ \(\d+\/\d+\)$/, ''),
-                            amount: Number(transaction.amount),
-                            type: transaction.type,
-                            installments: transaction.installments || 1
-                          });
-                        }}
-                        className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setTransactionToDelete(transaction.id)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-2 ml-2">
+                      <div className="text-right">
+                        <span className={`font-medium text-sm ${
+                          transaction.type === 'income' ? 'text-transaction-income' : 'text-red-600'
+                        }`}>
+                          {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingTransaction(transaction);
+                            setEditTransaction({
+                              description: transaction.description.replace(/ \(\d+\/\d+\)$/, ''),
+                              amount: Number(transaction.amount),
+                              type: transaction.type,
+                              installments: transaction.installments || 1
+                            });
+                          }}
+                          className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setTransactionToDelete(transaction.id)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {currentCycleTransactions.length === 0 && (
                 <div className="text-center text-gray-500 py-4">
