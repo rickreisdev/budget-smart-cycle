@@ -1354,10 +1354,11 @@ const Index = () => {
                        <div>
                          <Label>Parcelas</Label>
                          <Input
-                           type="number"
-                           min="1"
-                           value={newTransaction.installments}
-                           onChange={(e) => {
+                            type="number"
+                            min="1"
+                            value={newTransaction.installments}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
                              const installments = Number(e.target.value);
                              // Se já tem um valor total definido, recalcula o valor por parcela
                              if (newTransaction.totalAmount > 0) {
