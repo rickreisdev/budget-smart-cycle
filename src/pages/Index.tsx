@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -1184,8 +1184,8 @@ const Index = () => {
                 onClick={() => navigate('/income')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <TrendingUp className="h-4 w-4 mb-1 text-income group-hover:scale-110 transition-transform" />
-                <span className="text-xs">Rendas</span>
+                <TrendingUp className="h-4 w-4 sm:mb-1 text-income group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Rendas</span>
               </Button>
               <Button
                 variant="outline"
@@ -1193,8 +1193,8 @@ const Index = () => {
                 onClick={() => navigate('/instalment-purchases')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <CreditCard className="h-4 w-4 mb-1 text-installment group-hover:scale-110 transition-transform" />
-                <span className="text-xs">Parceladas</span>
+                <CreditCard className="h-4 w-4 sm:mb-1 text-installment group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Parceladas</span>
               </Button>
               <Button
                 variant="outline"
@@ -1202,8 +1202,8 @@ const Index = () => {
                 onClick={() => navigate('/recurring-purchases')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <RotateCcw className="h-4 w-4 mb-1 text-recurring group-hover:scale-110 transition-transform" />
-                <span className="text-xs">Recorrentes</span>
+                <RotateCcw className="h-4 w-4 sm:mb-1 text-recurring group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Recorrentes</span>
               </Button>
               <Button
                 variant="outline"
@@ -1211,8 +1211,8 @@ const Index = () => {
                 onClick={() => navigate('/fixed-expenses')}
                 className="flex flex-col items-center p-3 h-auto hover-scale group"
               >
-                <Wallet className="h-4 w-4 mb-1 text-fixed group-hover:scale-110 transition-transform" />
-                <span className="text-xs">Fixos</span>
+                <Wallet className="h-4 w-4 sm:mb-1 text-fixed group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Fixos</span>
               </Button>
             </div>
           </CardContent>
@@ -1261,7 +1261,6 @@ const Index = () => {
               <Button className="hover-scale text-xs sm:text-sm px-2 sm:px-4">
                 <Plus className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Adicionar</span>
-                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-sm">
@@ -1413,9 +1412,8 @@ const Index = () => {
             variant="outline"
             className="border-green-600 text-green-600 hover:bg-green-50 text-xs sm:text-sm px-2 sm:px-4"
           >
-            <TrendingUp className="h-4 w-4 sm:mr-2" />
+            <Clock className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Histórico</span>
-            <span className="sm:hidden">Hist.</span>
           </Button>
         </div>
 
