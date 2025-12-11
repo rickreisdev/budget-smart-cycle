@@ -1219,21 +1219,21 @@ const Index = () => {
         </Card>
 
         {/* Balance Overview */}
-        <div className="grid grid-cols-2 gap-3 animate-fade-in stagger-2">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 animate-fade-in stagger-2">
           <Card className="hover-lift">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-success">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-success break-all">
                 R$ {formatCurrency(totals.availableBalance)}
               </div>
-              <div className="text-sm text-muted-foreground">Saldo Disponível</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Saldo Disponível</div>
             </CardContent>
           </Card>
           <Card className="hover-lift">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-primary break-all">
                 R$ {formatCurrency(userProfile?.total_saved || 0)}
               </div>
-              <div className="text-sm text-muted-foreground">Total Guardado</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Total Guardado</div>
             </CardContent>
           </Card>
         </div>
@@ -1255,12 +1255,13 @@ const Index = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-3 gap-3 animate-fade-in stagger-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 animate-fade-in stagger-4">
           <Dialog open={showAddTransactionDialog} onOpenChange={setShowAddTransactionDialog}>
             <DialogTrigger asChild>
-              <Button className="hover-scale">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar
+              <Button className="hover-scale text-xs sm:text-sm px-2 sm:px-4">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-sm">
@@ -1389,10 +1390,10 @@ const Index = () => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 text-xs sm:text-sm px-2 sm:px-4"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -1410,10 +1411,11 @@ const Index = () => {
           <Button 
             onClick={() => setShowHistory(!showHistory)}
             variant="outline"
-            className="border-green-600 text-green-600 hover:bg-green-50"
+            className="border-green-600 text-green-600 hover:bg-green-50 text-xs sm:text-sm px-2 sm:px-4"
           >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Histórico
+            <TrendingUp className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Histórico</span>
+            <span className="sm:hidden">Hist.</span>
           </Button>
         </div>
 
@@ -1443,20 +1445,20 @@ const Index = () => {
                 return (
                   <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                     <div className="text-sm font-medium text-blue-900 mb-2">Resumo dos Valores Filtrados</div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="grid grid-cols-3 gap-1 sm:gap-2 text-xs">
                       <div className="text-center">
-                        <div className="text-green-600 font-medium">+R$ {formatCurrency(totalIncome)}</div>
-                        <div className="text-gray-500">Rendas</div>
+                        <div className="text-green-600 font-medium text-xs sm:text-sm break-all">+R$ {formatCurrency(totalIncome)}</div>
+                        <div className="text-gray-500 text-[10px] sm:text-xs">Rendas</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-red-600 font-medium">-R$ {formatCurrency(totalExpenses)}</div>
-                        <div className="text-gray-500">Gastos</div>
+                        <div className="text-red-600 font-medium text-xs sm:text-sm break-all">-R$ {formatCurrency(totalExpenses)}</div>
+                        <div className="text-gray-500 text-[10px] sm:text-xs">Gastos</div>
                       </div>
                       <div className="text-center">
-                        <div className={`font-medium ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`font-medium text-xs sm:text-sm break-all ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {netTotal >= 0 ? '+' : ''}R$ {formatCurrency(Math.abs(netTotal))}
                         </div>
-                        <div className="text-gray-500">Líquido</div>
+                        <div className="text-gray-500 text-[10px] sm:text-xs">Líquido</div>
                       </div>
                     </div>
                   </div>
@@ -1560,30 +1562,30 @@ const Index = () => {
                 };
 
                 return (
-                  <div key={transaction.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
+                  <div key={transaction.id} className="flex justify-between items-start p-2 sm:p-3 bg-gray-50 rounded-lg gap-1">
                     {/* Color indicator */}
-                    <div className={`w-1 self-stretch rounded-full mr-3 ${getTypeColor(transaction.type, transaction.is_recurrent)}`} />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{transaction.description}</div>
-                      <div className="text-xs text-gray-500">
+                    <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${getTypeColor(transaction.type, transaction.is_recurrent)}`} />
+                    <div className="flex-1 min-w-0 ml-2">
+                      <div className="font-medium text-xs sm:text-sm truncate">{transaction.description}</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500">
                         {getTransactionTypeInPortuguese(transaction.type)}
-                        {transaction.type === 'card' && transaction.is_recurrent && ' (Recorrente)'}
+                        {transaction.type === 'card' && transaction.is_recurrent && ' (Rec.)'}
                       </div>
                       {transaction.created_at && (
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 hidden sm:block">
                           Adicionado em: {formatDateForDisplay(transaction.created_at)}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 ml-2">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                       <div className="text-right">
-                        <span className={`font-medium text-sm ${
+                        <span className={`font-medium text-xs sm:text-sm ${
                           transaction.type === 'income' ? 'text-income' : 'text-red-600'
                         }`}>
                           {transaction.type === 'income' ? '+' : '-'}R$ {formatCurrency(Number(transaction.amount))}
                         </span>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-0.5 sm:gap-1">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1596,7 +1598,7 @@ const Index = () => {
                               installments: transaction.installments || 1
                             });
                           }}
-                          className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex-shrink-0"
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
