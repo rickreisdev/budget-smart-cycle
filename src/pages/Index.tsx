@@ -1274,7 +1274,7 @@ const Index = () => {
                     value={newTransaction.type} 
                     onValueChange={(value: Transaction['type']) => setNewTransaction({...newTransaction, type: value})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
