@@ -1084,7 +1084,7 @@ const Index = () => {
   if (isFirstTime && userProfile) {
     return (
       <div className="min-h-screen p-4">
-        <div className="max-w-md mx-auto pt-8 animate-fade-in">
+        <div className="max-w-md md:max-w-lg mx-auto pt-8 animate-fade-in">
           <Card className="overflow-hidden">
             <CardHeader className="text-center bg-gradient-to-r from-primary to-accent text-primary-foreground">
               <CardTitle className="text-2xl flex items-center justify-center gap-2">
@@ -1146,7 +1146,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 pb-24">
-      <div className="max-w-md mx-auto space-y-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-4">
         {/* Header */}
         <Card className="overflow-hidden animate-fade-in">
           <CardHeader className="text-center bg-gradient-to-r from-primary to-accent text-primary-foreground py-4">
