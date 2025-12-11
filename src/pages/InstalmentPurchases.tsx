@@ -384,15 +384,15 @@ const InstalmentPurchases = () => {
                 {groupTransactionsByBase().map((group, index) => (
                   <AccordionItem key={index} value={`item-${index}`}>
                     <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <div className="flex-1 text-left">
-                          <div className="font-medium">{group.baseDescription}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {formatDateToBrazilian(group.firstDate)} • {group.installments} parcelas
+                      <div className="flex items-center justify-between w-full pr-2 sm:pr-4 gap-2">
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="font-medium text-sm truncate">{group.baseDescription}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {formatDateToBrazilian(group.firstDate)} • {group.installments}x
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-installment">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                          <span className="font-semibold text-installment text-sm whitespace-nowrap">
                             R$ {formatCurrency(group.totalAmount)}
                           </span>
                           <Button
@@ -442,15 +442,15 @@ const InstalmentPurchases = () => {
                         {group.transactions.map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                            className="flex items-center justify-between p-2 sm:p-3 bg-muted/30 rounded-lg gap-2"
                           >
-                            <div className="flex-1">
-                              <div className="font-medium">{transaction.description}</div>
-                              <div className="text-sm text-muted-foreground">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{transaction.description}</div>
+                              <div className="text-xs text-muted-foreground">
                                 {formatDateToBrazilian(transaction.date)}
                               </div>
                             </div>
-                            <span className="font-semibold text-installment">
+                            <span className="font-semibold text-installment text-sm whitespace-nowrap flex-shrink-0">
                               R$ {formatCurrency(transaction.amount)}
                             </span>
                           </div>
