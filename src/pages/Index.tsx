@@ -1570,8 +1570,8 @@ const Index = () => {
                         {transaction.type === 'card' && transaction.is_recurrent && ' (Rec.)'}
                       </div>
                       {transaction.created_at && (
-                        <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 hidden sm:block">
-                          Adicionado em: {formatDateForDisplay(transaction.created_at)}
+                        <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
+                          {formatDateForDisplay(transaction.created_at)}
                         </div>
                       )}
                     </div>
