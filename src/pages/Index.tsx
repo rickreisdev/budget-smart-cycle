@@ -1147,6 +1147,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 pb-24">
+      {user && <ShoppingListModal userId={user.id} />}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-4">
         {/* Header */}
         <Card className="overflow-hidden animate-fade-in">
