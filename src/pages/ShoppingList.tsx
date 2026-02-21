@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Trash2, Plus, ShoppingCart, Check } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, ShoppingCart, Check, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +29,8 @@ const ShoppingList = () => {
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', quantity: '', price: '' });
+  const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
+  const [editItem, setEditItem] = useState({ name: '', quantity: '', price: '' });
 
   const formatCurrency = (value: number) => {
     return value.toFixed(2).replace('.', ',');
@@ -108,6 +110,40 @@ const ShoppingList = () => {
       loadItems();
     } catch (error) {
       toast.error('Erro ao remover item');
+    }
+  };
+
+  const startEditItem = (item: ShoppingItem) => {
+    setEditingItem(item);
+    setEditItem({
+      name: item.name,
+      quantity: item.quantity || '',
+      price: item.price ? String(item.price) : '',
+    });
+  };
+
+  const handleEditItem = async () => {
+    if (!editingItem || !editItem.name.trim()) {
+      toast.error('Nome do item é obrigatório');
+      return;
+    }
+    try {
+      const priceNum = parseFloat(editItem.price);
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .update({
+          name: editItem.name.trim(),
+          quantity: editItem.quantity.trim() || null,
+          price: priceNum > 0 ? priceNum : null,
+        })
+        .eq('id', editingItem.id);
+
+      if (error) throw error;
+      toast.success('Item atualizado!');
+      setEditingItem(null);
+      loadItems();
+    } catch (error) {
+      toast.error('Erro ao atualizar item');
     }
   };
 
@@ -239,6 +275,9 @@ const ShoppingList = () => {
                         {item.price && <span>R$ {formatCurrency(item.price)}</span>}
                       </div>
                     </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEditItem(item)}>
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
@@ -343,6 +382,43 @@ const ShoppingList = () => {
             </CardContent>
           </Card>
         )}
+        {/* Edit Dialog */}
+        <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Item</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome *</Label>
+                <Input
+                  value={editItem.name}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Quantidade</Label>
+                <Input
+                  value={editItem.quantity}
+                  onChange={(e) => setEditItem({ ...editItem, quantity: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Valor estimado</Label>
+                <CurrencyInput
+                  value={editItem.price}
+                  onValueChange={(value: string) => setEditItem({ ...editItem, price: value })}
+                  className="mt-1"
+                />
+              </div>
+              <Button onClick={handleEditItem} className="w-full">
+                Salvar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
