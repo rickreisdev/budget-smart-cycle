@@ -113,7 +113,41 @@ const ShoppingList = () => {
     }
   };
 
-  const handleClearPurchased = async () => {
+  const startEditItem = (item: ShoppingItem) => {
+    setEditingItem(item);
+    setEditItem({
+      name: item.name,
+      quantity: item.quantity || '',
+      price: item.price ? String(item.price) : '',
+    });
+  };
+
+  const handleEditItem = async () => {
+    if (!editingItem || !editItem.name.trim()) {
+      toast.error('Nome do item é obrigatório');
+      return;
+    }
+    try {
+      const priceNum = parseFloat(editItem.price);
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .update({
+          name: editItem.name.trim(),
+          quantity: editItem.quantity.trim() || null,
+          price: priceNum > 0 ? priceNum : null,
+        })
+        .eq('id', editingItem.id);
+
+      if (error) throw error;
+      toast.success('Item atualizado!');
+      setEditingItem(null);
+      loadItems();
+    } catch (error) {
+      toast.error('Erro ao atualizar item');
+    }
+  };
+
+
     try {
       const { error } = await supabase
         .from('shopping_list_items')
