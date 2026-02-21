@@ -198,7 +198,7 @@ const ShoppingList = () => {
                 <Label>Valor estimado</Label>
                 <CurrencyInput
                   value={newItem.price}
-                  onValueChange={(value) => setNewItem({ ...newItem, price: value })}
+                  onValueChange={(value: string) => setNewItem({ ...newItem, price: value })}
                   className="mt-1"
                 />
               </div>
