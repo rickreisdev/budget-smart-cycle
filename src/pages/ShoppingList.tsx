@@ -147,8 +147,7 @@ const ShoppingList = () => {
     }
   };
 
-
-    try {
+  const handleClearPurchased = async () => {
       const { error } = await supabase
         .from('shopping_list_items')
         .delete()
