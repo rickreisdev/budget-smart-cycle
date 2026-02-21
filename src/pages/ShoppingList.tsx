@@ -275,6 +275,9 @@ const ShoppingList = () => {
                         {item.price && <span>R$ {formatCurrency(item.price)}</span>}
                       </div>
                     </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEditItem(item)}>
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
