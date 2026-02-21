@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText, Clock } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText, Clock, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,7 @@ import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
+import ShoppingListModal from '@/components/ShoppingListModal';
 
 interface Transaction {
   id: string;
@@ -1146,6 +1147,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 pb-24">
+      {user && <ShoppingListModal userId={user.id} />}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-4">
         {/* Header */}
         <Card className="overflow-hidden animate-fade-in">
@@ -1177,7 +1179,7 @@ const Index = () => {
             <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -1213,6 +1215,15 @@ const Index = () => {
               >
                 <Wallet className="h-4 w-4 sm:mb-1 text-fixed group-hover:scale-110 transition-transform" />
                 <span className="text-xs hidden sm:inline">Fixos</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/shopping-list')}
+                className="flex flex-col items-center p-3 h-auto hover-scale group"
+              >
+                <ShoppingCart className="h-4 w-4 sm:mb-1 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Compras</span>
               </Button>
             </div>
           </CardContent>
