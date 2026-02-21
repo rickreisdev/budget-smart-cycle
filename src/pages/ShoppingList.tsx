@@ -382,6 +382,43 @@ const ShoppingList = () => {
             </CardContent>
           </Card>
         )}
+        {/* Edit Dialog */}
+        <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Item</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome *</Label>
+                <Input
+                  value={editItem.name}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Quantidade</Label>
+                <Input
+                  value={editItem.quantity}
+                  onChange={(e) => setEditItem({ ...editItem, quantity: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Valor estimado</Label>
+                <CurrencyInput
+                  value={editItem.price}
+                  onValueChange={(value: string) => setEditItem({ ...editItem, price: value })}
+                  className="mt-1"
+                />
+              </div>
+              <Button onClick={handleEditItem} className="w-full">
+                Salvar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
