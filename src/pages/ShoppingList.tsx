@@ -64,11 +64,12 @@ const ShoppingList = () => {
     }
 
     try {
+      const priceNum = parseFloat(newItem.price);
       const { error } = await supabase.from('shopping_list_items').insert({
         user_id: user.id,
         name: newItem.name.trim(),
         quantity: newItem.quantity.trim() || null,
-        price: newItem.price > 0 ? newItem.price : null,
+        price: priceNum > 0 ? priceNum : null,
       });
 
       if (error) throw error;
