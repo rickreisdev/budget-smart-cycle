@@ -28,7 +28,7 @@ const ShoppingList = () => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newItem, setNewItem] = useState({ name: '', quantity: '', price: 0 });
+  const [newItem, setNewItem] = useState({ name: '', quantity: '', price: '' });
 
   const formatCurrency = (value: number) => {
     return value.toFixed(2).replace('.', ',');
