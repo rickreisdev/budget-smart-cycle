@@ -18,6 +18,7 @@ import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
+import ShoppingListModal from '@/components/ShoppingListModal';
 
 interface Transaction {
   id: string;
