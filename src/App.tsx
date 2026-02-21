@@ -12,6 +12,7 @@ import InstalmentPurchases from "./pages/InstalmentPurchases";
 import RecurringPurchases from "./pages/RecurringPurchases";
 import FixedExpenses from "./pages/FixedExpenses";
 import Income from "./pages/Income";
+import ShoppingList from "./pages/ShoppingList";
 import { Footer } from "@/components/Footer";
 
 const queryClient = new QueryClient();
