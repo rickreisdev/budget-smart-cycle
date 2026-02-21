@@ -74,7 +74,7 @@ const ShoppingList = () => {
 
       if (error) throw error;
       toast.success('Item adicionado!');
-      setNewItem({ name: '', quantity: '', price: 0 });
+      setNewItem({ name: '', quantity: '', price: '' });
       setShowAddDialog(false);
       loadItems();
     } catch (error) {
