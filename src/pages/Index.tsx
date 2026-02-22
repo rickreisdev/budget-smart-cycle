@@ -439,7 +439,7 @@ const Index = () => {
       toast.success('Transação removida apenas do ciclo atual');
       setRecurrentToDelete(null);
     } catch (error) {
-      console.error('Error deleting recurrent from current cycle:', error);
+      if (import.meta.env.DEV) console.error('Error deleting recurrent from current cycle:', error);
       toast.error('Erro ao remover transação');
     }
   };
