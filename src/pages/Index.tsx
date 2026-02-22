@@ -621,7 +621,7 @@ const Index = () => {
         .delete()
         .eq('user_id', user.id)
         .eq('type', 'casual')
-        .like('date', `${userProfile.current_cycle}%`);
+        .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
 
       // Get current cycle installment purchases
       const currentCycleTransactions = transactions.filter(t => 
