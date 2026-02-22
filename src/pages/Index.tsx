@@ -418,7 +418,7 @@ const Index = () => {
       loadTransactions();
       toast.success('Transação removida com sucesso');
     } catch (error) {
-      console.error('Error in deleteTransaction:', error);
+      if (import.meta.env.DEV) console.error('Error in deleteTransaction:', error);
       toast.error('Erro ao remover transação');
     }
   };
