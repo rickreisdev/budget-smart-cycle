@@ -93,7 +93,7 @@ const FixedExpenses = () => {
       loadTransactions();
       toast.success('Gasto fixo removido com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover gasto fixo');
     }
   };
