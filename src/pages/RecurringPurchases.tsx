@@ -103,7 +103,7 @@ const RecurringPurchases = () => {
       loadTransactions();
       toast.success('Compra recorrente removida com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover compra recorrente');
     }
   };
