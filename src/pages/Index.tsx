@@ -658,8 +658,8 @@ const Index = () => {
           .eq('user_id', user.id)
           .eq('type', 'card')
           .eq('amount', group.amount)
-          .like('description', `${group.baseDescription}%`)
-          .like('date', `${userProfile.current_cycle}%`);
+          .like('description', `${escapeLikePattern(group.baseDescription)}%`)
+          .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
       }
 
       // Handle recurrent transactions for new cycle
