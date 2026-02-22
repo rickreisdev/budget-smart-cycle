@@ -399,7 +399,7 @@ const Index = () => {
           .like('description', `${baseDescription}%`);
 
         if (error) {
-          console.error('Error deleting installment transactions:', error);
+          if (import.meta.env.DEV) console.error('Error deleting installment transactions:', error);
           throw error;
         }
       } else {
