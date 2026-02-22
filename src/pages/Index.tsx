@@ -571,7 +571,7 @@ const Index = () => {
       setEditingTransaction(null);
       toast.success('Transação atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar transação');
     }
   };
