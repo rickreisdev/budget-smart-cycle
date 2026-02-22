@@ -533,7 +533,7 @@ const Index = () => {
             .eq('user_id', user?.id)
             .eq('type', 'card')
             .eq('amount', editingTransaction.amount)
-            .like('description', `${baseDescription}%`);
+            .like('description', `${escapeLikePattern(baseDescription)}%`);
 
           if (error) throw error;
 
