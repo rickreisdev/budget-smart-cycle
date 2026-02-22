@@ -147,7 +147,7 @@ const Index = () => {
       .single();
 
     if (error) {
-      console.error('Error loading profile:', error);
+      if (import.meta.env.DEV) console.error('Error loading profile:', error);
       toast.error('Erro ao carregar perfil');
     } else if (data) {
       setUserProfile(data);
