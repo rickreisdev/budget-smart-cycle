@@ -464,7 +464,7 @@ const Index = () => {
       toast.success('Transação recorrente removida de todos os ciclos');
       setRecurrentToDelete(null);
     } catch (error) {
-      console.error('Error deleting recurrent from all cycles:', error);
+      if (import.meta.env.DEV) console.error('Error deleting recurrent from all cycles:', error);
       toast.error('Erro ao remover transação');
     }
   };
