@@ -64,7 +64,7 @@ const InstalmentPurchases = () => {
       .single();
 
     if (error) {
-      console.error('Error loading current cycle:', error);
+      if (import.meta.env.DEV) console.error('Error loading current cycle:', error);
     } else {
       setCurrentCycle(data?.current_cycle || '');
     }
