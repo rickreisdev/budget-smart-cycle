@@ -58,7 +58,7 @@ const Income = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar rendas');
     } else {
       const typedTransactions: Transaction[] = (data || []).map(item => ({
@@ -94,7 +94,7 @@ const Income = () => {
       loadTransactions();
       toast.success('Renda removida com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover renda');
     }
   };
@@ -120,7 +120,7 @@ const Income = () => {
       setEditingTransaction(null);
       toast.success('Renda atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar renda');
     }
   };

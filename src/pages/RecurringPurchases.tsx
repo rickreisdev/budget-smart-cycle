@@ -57,7 +57,7 @@ const RecurringPurchases = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar compras recorrentes');
     } else {
       const typedTransactions: Transaction[] = (data || []).map(item => ({
@@ -103,7 +103,7 @@ const RecurringPurchases = () => {
       loadTransactions();
       toast.success('Compra recorrente removida com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover compra recorrente');
     }
   };
@@ -129,7 +129,7 @@ const RecurringPurchases = () => {
       setEditingTransaction(null);
       toast.success('Compra recorrente atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar compra recorrente');
     }
   };

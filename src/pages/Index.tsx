@@ -147,7 +147,7 @@ const Index = () => {
       .single();
 
     if (error) {
-      console.error('Error loading profile:', error);
+      if (import.meta.env.DEV) console.error('Error loading profile:', error);
       toast.error('Erro ao carregar perfil');
     } else if (data) {
       setUserProfile(data);
@@ -187,7 +187,7 @@ const Index = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar transações');
     } else {
       // Type-safe mapping to ensure compatibility
@@ -334,7 +334,7 @@ const Index = () => {
         .insert(transactionsToInsert);
 
       if (error) {
-        console.error('Error adding installment transactions:', error);
+        if (import.meta.env.DEV) console.error('Error adding installment transactions:', error);
         toast.error('Erro ao adicionar transação parcelada');
         return;
       } else {
@@ -347,7 +347,7 @@ const Index = () => {
         .insert([transactionData]);
 
       if (error) {
-        console.error('Error adding transaction:', error);
+        if (import.meta.env.DEV) console.error('Error adding transaction:', error);
         toast.error('Erro ao adicionar transação');
         return;
       } else {
@@ -399,7 +399,7 @@ const Index = () => {
           .like('description', `${baseDescription}%`);
 
         if (error) {
-          console.error('Error deleting installment transactions:', error);
+          if (import.meta.env.DEV) console.error('Error deleting installment transactions:', error);
           throw error;
         }
       } else {
@@ -410,7 +410,7 @@ const Index = () => {
           .eq('id', id);
 
         if (error) {
-          console.error('Error deleting transaction:', error);
+          if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
           throw error;
         }
       }
@@ -418,7 +418,7 @@ const Index = () => {
       loadTransactions();
       toast.success('Transação removida com sucesso');
     } catch (error) {
-      console.error('Error in deleteTransaction:', error);
+      if (import.meta.env.DEV) console.error('Error in deleteTransaction:', error);
       toast.error('Erro ao remover transação');
     }
   };
@@ -439,7 +439,7 @@ const Index = () => {
       toast.success('Transação removida apenas do ciclo atual');
       setRecurrentToDelete(null);
     } catch (error) {
-      console.error('Error deleting recurrent from current cycle:', error);
+      if (import.meta.env.DEV) console.error('Error deleting recurrent from current cycle:', error);
       toast.error('Erro ao remover transação');
     }
   };
@@ -464,7 +464,7 @@ const Index = () => {
       toast.success('Transação recorrente removida de todos os ciclos');
       setRecurrentToDelete(null);
     } catch (error) {
-      console.error('Error deleting recurrent from all cycles:', error);
+      if (import.meta.env.DEV) console.error('Error deleting recurrent from all cycles:', error);
       toast.error('Erro ao remover transação');
     }
   };
@@ -571,7 +571,7 @@ const Index = () => {
       setEditingTransaction(null);
       toast.success('Transação atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar transação');
     }
   };
@@ -1048,7 +1048,7 @@ const Index = () => {
       setShowMonthSelectorAfterReset(false);
       toast.success('Todos os dados foram resetados com sucesso!');
     } catch (error) {
-      console.error('Error resetting data:', error);
+      if (import.meta.env.DEV) console.error('Error resetting data:', error);
       toast.error('Erro ao resetar os dados');
       setShowMonthSelectorAfterReset(false);
     }

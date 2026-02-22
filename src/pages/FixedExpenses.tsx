@@ -57,7 +57,7 @@ const FixedExpenses = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar gastos fixos');
     } else {
       const typedTransactions: Transaction[] = (data || []).map(item => ({
@@ -93,7 +93,7 @@ const FixedExpenses = () => {
       loadTransactions();
       toast.success('Gasto fixo removido com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover gasto fixo');
     }
   };
@@ -119,7 +119,7 @@ const FixedExpenses = () => {
       setEditingTransaction(null);
       toast.success('Gasto fixo atualizado com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar gasto fixo');
     }
   };

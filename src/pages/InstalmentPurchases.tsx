@@ -64,7 +64,7 @@ const InstalmentPurchases = () => {
       .single();
 
     if (error) {
-      console.error('Error loading current cycle:', error);
+      if (import.meta.env.DEV) console.error('Error loading current cycle:', error);
     } else {
       setCurrentCycle(data?.current_cycle || '');
     }
@@ -89,7 +89,7 @@ const InstalmentPurchases = () => {
     const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar compras parceladas');
     } else {
       const typedTransactions: Transaction[] = (data || []).map(item => ({
@@ -181,7 +181,7 @@ const InstalmentPurchases = () => {
       loadTransactions();
       toast.success('Compra parcelada removida com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover compra parcelada');
     }
   };
@@ -283,7 +283,7 @@ const InstalmentPurchases = () => {
       setEditingTransaction(null);
       toast.success('Compra parcelada atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       toast.error('Erro ao atualizar compra parcelada');
     }
   };
