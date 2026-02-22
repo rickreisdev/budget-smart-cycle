@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToBrazilian } from '@/lib/utils';
+import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
@@ -166,7 +167,7 @@ const InstalmentPurchases = () => {
           .eq('user_id', user?.id)
           .eq('type', 'card')
           .eq('amount', transactionToDelete.amount)
-          .like('description', `${baseDescription}%`);
+          .like('description', `${escapeLikePattern(baseDescription)}%`);
 
         if (error) throw error;
       } else {
@@ -204,7 +205,7 @@ const InstalmentPurchases = () => {
             .eq('user_id', user?.id)
             .eq('type', 'card')
             .eq('amount', editingTransaction.amount)
-            .like('description', `${baseDescription}%`);
+            .like('description', `${escapeLikePattern(baseDescription)}%`);
 
           // Create new installments
           const transactionsToInsert = [];
@@ -246,7 +247,7 @@ const InstalmentPurchases = () => {
             .eq('user_id', user?.id)
             .eq('type', 'card')
             .eq('amount', editingTransaction.amount)
-            .like('description', `${baseDescription}%`);
+            .like('description', `${escapeLikePattern(baseDescription)}%`);
 
           if (error) throw error;
 

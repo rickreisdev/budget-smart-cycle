@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
+import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
 import ShoppingListModal from '@/components/ShoppingListModal';
@@ -396,7 +397,7 @@ const Index = () => {
           .eq('user_id', user?.id)
           .eq('type', 'card')
           .eq('amount', transactionToDelete.amount)
-          .like('description', `${baseDescription}%`);
+          .like('description', `${escapeLikePattern(baseDescription)}%`);
 
         if (error) {
           if (import.meta.env.DEV) console.error('Error deleting installment transactions:', error);
@@ -490,7 +491,7 @@ const Index = () => {
             .eq('user_id', user?.id)
             .eq('type', 'card')
             .eq('amount', editingTransaction.amount)
-            .like('description', `${baseDescription}%`);
+            .like('description', `${escapeLikePattern(baseDescription)}%`);
 
           // Create new installments with the new count
           const transactionsToInsert = [];
@@ -532,7 +533,7 @@ const Index = () => {
             .eq('user_id', user?.id)
             .eq('type', 'card')
             .eq('amount', editingTransaction.amount)
-            .like('description', `${baseDescription}%`);
+            .like('description', `${escapeLikePattern(baseDescription)}%`);
 
           if (error) throw error;
 
@@ -620,7 +621,7 @@ const Index = () => {
         .delete()
         .eq('user_id', user.id)
         .eq('type', 'casual')
-        .like('date', `${userProfile.current_cycle}%`);
+        .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
 
       // Get current cycle installment purchases
       const currentCycleTransactions = transactions.filter(t => 
@@ -657,8 +658,8 @@ const Index = () => {
           .eq('user_id', user.id)
           .eq('type', 'card')
           .eq('amount', group.amount)
-          .like('description', `${group.baseDescription}%`)
-          .like('date', `${userProfile.current_cycle}%`);
+          .like('description', `${escapeLikePattern(group.baseDescription)}%`)
+          .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
       }
 
       // Handle recurrent transactions for new cycle
@@ -680,7 +681,7 @@ const Index = () => {
         .select('description, amount, type')
         .eq('user_id', user.id)
         .eq('is_recurrent', true)
-        .like('date', `${newCycle}%`);
+        .like('date', `${escapeLikePattern(newCycle)}%`);
 
       const existingKeys = new Set(
         (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
