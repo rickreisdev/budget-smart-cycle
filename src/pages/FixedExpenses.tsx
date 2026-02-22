@@ -57,7 +57,7 @@ const FixedExpenses = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error loading transactions:', error);
+      if (import.meta.env.DEV) console.error('Error loading transactions:', error);
       toast.error('Erro ao carregar gastos fixos');
     } else {
       const typedTransactions: Transaction[] = (data || []).map(item => ({
