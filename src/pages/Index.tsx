@@ -410,7 +410,7 @@ const Index = () => {
           .eq('id', id);
 
         if (error) {
-          console.error('Error deleting transaction:', error);
+          if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
           throw error;
         }
       }
