@@ -1048,7 +1048,7 @@ const Index = () => {
       setShowMonthSelectorAfterReset(false);
       toast.success('Todos os dados foram resetados com sucesso!');
     } catch (error) {
-      console.error('Error resetting data:', error);
+      if (import.meta.env.DEV) console.error('Error resetting data:', error);
       toast.error('Erro ao resetar os dados');
       setShowMonthSelectorAfterReset(false);
     }
