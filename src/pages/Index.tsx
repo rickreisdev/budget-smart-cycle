@@ -334,7 +334,7 @@ const Index = () => {
         .insert(transactionsToInsert);
 
       if (error) {
-        console.error('Error adding installment transactions:', error);
+        if (import.meta.env.DEV) console.error('Error adding installment transactions:', error);
         toast.error('Erro ao adicionar transação parcelada');
         return;
       } else {
