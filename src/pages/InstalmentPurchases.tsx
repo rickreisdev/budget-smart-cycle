@@ -181,7 +181,7 @@ const InstalmentPurchases = () => {
       loadTransactions();
       toast.success('Compra parcelada removida com sucesso');
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       toast.error('Erro ao remover compra parcelada');
     }
   };
