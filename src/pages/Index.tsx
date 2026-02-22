@@ -681,7 +681,7 @@ const Index = () => {
         .select('description, amount, type')
         .eq('user_id', user.id)
         .eq('is_recurrent', true)
-        .like('date', `${newCycle}%`);
+        .like('date', `${escapeLikePattern(newCycle)}%`);
 
       const existingKeys = new Set(
         (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
