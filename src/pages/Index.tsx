@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
+import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
 import ShoppingListModal from '@/components/ShoppingListModal';
