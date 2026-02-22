@@ -347,7 +347,7 @@ const Index = () => {
         .insert([transactionData]);
 
       if (error) {
-        console.error('Error adding transaction:', error);
+        if (import.meta.env.DEV) console.error('Error adding transaction:', error);
         toast.error('Erro ao adicionar transação');
         return;
       } else {
