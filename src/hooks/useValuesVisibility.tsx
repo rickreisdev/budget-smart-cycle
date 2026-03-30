@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface ValuesVisibilityContextType {
   visible: boolean;
   toggle: () => void;
-  formatValue: (value: string) => string;
 }
 
 const ValuesVisibilityContext = createContext<ValuesVisibilityContextType | undefined>(undefined);
@@ -16,17 +15,17 @@ export const ValuesVisibilityProvider = ({ children }: { children: ReactNode }) 
 
   useEffect(() => {
     localStorage.setItem('values-visible', String(visible));
+    if (!visible) {
+      document.body.classList.add('hide-values');
+    } else {
+      document.body.classList.remove('hide-values');
+    }
   }, [visible]);
 
   const toggle = () => setVisible(prev => !prev);
 
-  const formatValue = (value: string) => {
-    if (visible) return value;
-    return '••••••';
-  };
-
   return (
-    <ValuesVisibilityContext.Provider value={{ visible, toggle, formatValue }}>
+    <ValuesVisibilityContext.Provider value={{ visible, toggle }}>
       {children}
     </ValuesVisibilityContext.Provider>
   );
