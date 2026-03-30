@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 
 interface ShoppingItem {
   id: string;
