@@ -14,6 +14,8 @@ import FixedExpenses from "./pages/FixedExpenses";
 import Income from "./pages/Income";
 import ShoppingList from "./pages/ShoppingList";
 import { Footer } from "@/components/Footer";
+import { ValuesVisibilityProvider } from "@/hooks/useValuesVisibility";
+import { ValuesToggle } from "@/components/ValuesToggle";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +26,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <div className="flex-1">
-              <Routes>
+          <ValuesVisibilityProvider>
+            <ValuesToggle />
+            <div className="min-h-screen flex flex-col">
+              <div className="flex-1">
+                <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/instalment-purchases" element={<InstalmentPurchases />} />
@@ -39,6 +43,7 @@ const App = () => (
             </div>
             <Footer />
           </div>
+          </ValuesVisibilityProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 
 interface ShoppingItem {
   id: string;
@@ -25,9 +26,7 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ userId }) => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const navigate = useNavigate();
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     checkAndShow();

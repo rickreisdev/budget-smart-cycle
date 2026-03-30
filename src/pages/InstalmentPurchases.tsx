@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 
 interface Transaction {
   id: string;
@@ -46,9 +47,7 @@ const InstalmentPurchases = () => {
     installments: 1
   });
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     loadTransactions();

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 
 interface ShoppingItem {
   id: string;
@@ -32,9 +33,7 @@ const ShoppingList = () => {
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
   const [editItem, setEditItem] = useState({ name: '', quantity: '', price: '' });
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     loadItems();

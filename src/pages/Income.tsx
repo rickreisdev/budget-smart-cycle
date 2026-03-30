@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 
 interface Transaction {
   id: string;
@@ -39,9 +40,7 @@ const Income = () => {
     amount: 0
   });
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     loadTransactions();

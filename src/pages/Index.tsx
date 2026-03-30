@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
 import { formatDateToBrazilian } from '@/lib/utils';
 import { escapeLikePattern } from '@/lib/sanitize';
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
 import ShoppingListModal from '@/components/ShoppingListModal';
@@ -102,10 +103,7 @@ const Index = () => {
   const [confirmationText, setConfirmationText] = useState('');
   const [showIncomeChoiceDialog, setShowIncomeChoiceDialog] = useState(false);
 
-  // Function to format currency with Brazilian standard (comma as decimal separator)
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   // Function to translate transaction types to Portuguese
   const getTransactionTypeInPortuguese = (type: Transaction['type']) => {
