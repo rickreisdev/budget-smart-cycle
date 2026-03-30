@@ -43,6 +43,7 @@ const App = () => (
             </div>
             <Footer />
           </div>
+          </ValuesVisibilityProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
