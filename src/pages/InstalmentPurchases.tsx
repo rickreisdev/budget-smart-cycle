@@ -47,9 +47,7 @@ const InstalmentPurchases = () => {
     installments: 1
   });
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     loadTransactions();

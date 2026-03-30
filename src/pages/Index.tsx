@@ -103,10 +103,7 @@ const Index = () => {
   const [confirmationText, setConfirmationText] = useState('');
   const [showIncomeChoiceDialog, setShowIncomeChoiceDialog] = useState(false);
 
-  // Function to format currency with Brazilian standard (comma as decimal separator)
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   // Function to translate transaction types to Portuguese
   const getTransactionTypeInPortuguese = (type: Transaction['type']) => {
