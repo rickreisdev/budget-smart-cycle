@@ -26,9 +26,7 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ userId }) => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const navigate = useNavigate();
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     checkAndShow();
