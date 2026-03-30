@@ -10,7 +10,7 @@ const ValuesVisibilityContext = createContext<ValuesVisibilityContextType | unde
 export const ValuesVisibilityProvider = ({ children }: { children: ReactNode }) => {
   const [visible, setVisible] = useState(() => {
     const stored = localStorage.getItem('values-visible');
-    return stored !== 'false';
+    return stored === 'true';
   });
 
   useEffect(() => {
