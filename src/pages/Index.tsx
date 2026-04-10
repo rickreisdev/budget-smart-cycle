@@ -208,7 +208,8 @@ const Index = () => {
         installments: item.installments || 1,
         current_installment: item.current_installment || 1,
         ideal_day: item.ideal_day || undefined,
-        created_at: item.created_at
+        created_at: item.created_at,
+        card_id: item.card_id || null
       }));
       setTransactions(typedTransactions);
     }
@@ -290,7 +291,7 @@ const Index = () => {
       return;
     }
 
-    const transactionData = {
+    const transactionData: any = {
       user_id: user.id,
       type: newTransaction.type,
       description: newTransaction.description,
@@ -299,7 +300,8 @@ const Index = () => {
       is_recurrent: newTransaction.is_recurrent,
       installments: newTransaction.installments,
       current_installment: 1,
-      ideal_day: newTransaction.ideal_day
+      ideal_day: newTransaction.ideal_day,
+      ...(newTransaction.type === 'card' && newTransaction.card_id ? { card_id: newTransaction.card_id } : {})
     };
 
     if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
