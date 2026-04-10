@@ -21,6 +21,7 @@ import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
 import ShoppingListModal from '@/components/ShoppingListModal';
+import { useCreditCards } from '@/hooks/useCreditCards';
 
 interface Transaction {
   id: string;
@@ -33,6 +34,7 @@ interface Transaction {
   current_installment?: number;
   ideal_day?: number;
   created_at?: string;
+  card_id?: string | null;
 }
 
 interface UserProfile {
