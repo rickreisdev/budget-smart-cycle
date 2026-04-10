@@ -371,7 +371,8 @@ const Index = () => {
       is_recurrent: false,
       installments: 1,
       ideal_day: userProfile?.ideal_day || 5,
-      totalAmount: 0
+      totalAmount: 0,
+      card_id: ''
     });
     setShowAddTransactionDialog(false);
   };
