@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_cards: {
+        Row: {
+          active: boolean
+          card_name: string
+          created_at: string
+          days_before_closing: number
+          due_day: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          card_name: string
+          created_at?: string
+          days_before_closing?: number
+          due_day: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          card_name?: string
+          created_at?: string
+          days_before_closing?: number
+          due_day?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -89,6 +122,7 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          card_id: string | null
           created_at: string | null
           current_installment: number | null
           date: string
@@ -102,6 +136,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          card_id?: string | null
           created_at?: string | null
           current_installment?: number | null
           date: string
@@ -115,6 +150,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          card_id?: string | null
           created_at?: string | null
           current_installment?: number | null
           date?: string
@@ -127,6 +163,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_user_id_fkey"
             columns: ["user_id"]
