@@ -1362,6 +1362,27 @@ const Index = () => {
                 
                 {newTransaction.type === 'card' && (
                   <>
+                    <div>
+                      <Label>Cartão</Label>
+                      <Select
+                        value={newTransaction.card_id}
+                        onValueChange={(v) => setNewTransaction({...newTransaction, card_id: v})}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Selecione o cartão" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {creditCards.map(card => (
+                            <SelectItem key={card.id} value={card.id}>{card.card_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {creditCards.length === 0 && (
+                        <p className="text-xs text-destructive mt-1">
+                          Nenhum cartão cadastrado. <button className="underline" onClick={() => navigate('/credit-cards')}>Cadastrar cartão</button>
+                        </p>
+                      )}
+                    </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="recurrent"
@@ -1381,7 +1402,6 @@ const Index = () => {
                             onFocus={(e) => e.target.select()}
                             onChange={(e) => {
                              const installments = Number(e.target.value);
-                             // Se já tem um valor total definido, recalcula o valor por parcela
                              if (newTransaction.totalAmount > 0) {
                                const amountPerInstallment = newTransaction.totalAmount / installments;
                                setNewTransaction({
