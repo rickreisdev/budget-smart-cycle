@@ -36,6 +36,7 @@ interface Transaction {
 const InstalmentPurchases = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { cards: creditCards } = useCreditCards();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -46,7 +47,8 @@ const InstalmentPurchases = () => {
   const [editTransaction, setEditTransaction] = useState({
     description: '',
     amount: 0,
-    installments: 1
+    installments: 1,
+    card_id: '' as string
   });
 
   const formatCurrency = useFormatCurrency();
