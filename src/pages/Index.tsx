@@ -632,12 +632,16 @@ const Index = () => {
         .eq('type', 'casual')
         .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
 
-      // Get current cycle installment purchases
-      const currentCycleTransactions = transactions.filter(t => 
-        t.date.startsWith(userProfile.current_cycle) && 
-        t.type === 'card' && 
-        !t.is_recurrent
-      );
+      // Get current cycle installment purchases - filter by selected card if applicable
+      const currentCycleTransactions = transactions.filter(t => {
+        if (!t.date.startsWith(userProfile.current_cycle)) return false;
+        if (t.type !== 'card' || t.is_recurrent) return false;
+        // Filter by selected card
+        if (selectedCycleCardId) {
+          return t.card_id === selectedCycleCardId;
+        }
+        return true; // "all cards" selected
+      });
 
       // Group installment purchases by base description and amount
       const installmentGroups = new Map();
@@ -659,8 +663,6 @@ const Index = () => {
 
       // Process each installment group
       for (const [key, group] of installmentGroups) {
-        // Simply delete the current cycle's installment
-        // Future installments already exist from when the purchase was created
         await supabase
           .from('transactions')
           .delete()
@@ -672,7 +674,6 @@ const Index = () => {
       }
 
       // Handle recurrent transactions for new cycle
-      // Get all unique recurrent transactions that should exist
       const uniqueRecurrentMap = new Map();
       
       transactions
@@ -684,7 +685,6 @@ const Index = () => {
           }
         });
 
-      // Check which recurrent transactions already exist in the new cycle
       const { data: existingRecurrentInNewCycle } = await supabase
         .from('transactions')
         .select('description, amount, type')
@@ -696,7 +696,6 @@ const Index = () => {
         (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
       );
 
-      // Only create recurrent transactions that don't already exist in the new cycle
       const recurrentTransactionsToInsert = Array.from(uniqueRecurrentMap.values())
         .filter(t => {
           const key = `${t.description}_${t.amount}_${t.type}`;
@@ -723,6 +722,7 @@ const Index = () => {
       loadUserProfile();
       loadTransactions();
       setShowIncomeChoiceDialog(false);
+      setSelectedCycleCardId(null);
       toast.success('Novo ciclo iniciado!');
     }
   };
@@ -730,15 +730,26 @@ const Index = () => {
   const startNewCycle = () => {
     if (!user || !userProfile) return;
     
-    // Check if user has monthly_salary or initial_income to ask
+    // If there are credit cards, show card selection first
+    if (creditCards.length > 0) {
+      setShowCardCycleChoice(true);
+      return;
+    }
+    
+    // No cards - proceed with old flow
+    proceedWithNewCycle();
+  };
+
+  const proceedWithNewCycle = () => {
+    if (!userProfile) return;
+    setShowCardCycleChoice(false);
+    
     const hasMonthlyIncome = userProfile.monthly_salary > 0;
     const hasInitialIncome = userProfile.initial_income > 0;
     
     if (hasMonthlyIncome || hasInitialIncome) {
-      // Show dialog to choose income
       setShowIncomeChoiceDialog(true);
     } else {
-      // No income to add, proceed directly
       startNewCycleWithIncome('none');
     }
   };
