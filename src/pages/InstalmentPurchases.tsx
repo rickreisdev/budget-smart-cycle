@@ -518,6 +518,22 @@ const InstalmentPurchases = () => {
                   })}
                 />
               </div>
+              <div>
+                <Label>Cartão</Label>
+                <Select
+                  value={editTransaction.card_id}
+                  onValueChange={(v) => setEditTransaction({...editTransaction, card_id: v})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione o cartão" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {creditCards.map(card => (
+                      <SelectItem key={card.id} value={card.id}>{card.card_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex gap-2">
                 <Button onClick={updateTransaction}>Salvar</Button>
                 <Button variant="outline" onClick={() => setEditingTransaction(null)}>
