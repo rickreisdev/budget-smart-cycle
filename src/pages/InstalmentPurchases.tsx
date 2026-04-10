@@ -232,7 +232,8 @@ const InstalmentPurchases = () => {
               is_recurrent: false,
               installments: editTransaction.installments,
               current_installment: i + 1,
-              ideal_day: editingTransaction.ideal_day
+              ideal_day: editingTransaction.ideal_day,
+              ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
             });
           }
 
@@ -246,7 +247,8 @@ const InstalmentPurchases = () => {
           const { error } = await supabase
             .from('transactions')
             .update({
-              amount: editTransaction.amount
+              amount: editTransaction.amount,
+              ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
             })
             .eq('user_id', user?.id)
             .eq('type', 'card')
@@ -277,7 +279,8 @@ const InstalmentPurchases = () => {
           .from('transactions')
           .update({
             description: editTransaction.description,
-            amount: editTransaction.amount
+            amount: editTransaction.amount,
+            ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
           })
           .eq('id', editingTransaction.id);
 
