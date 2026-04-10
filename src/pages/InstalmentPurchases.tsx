@@ -395,6 +395,11 @@ const InstalmentPurchases = () => {
                           <div className="font-medium text-sm truncate">{group.baseDescription}</div>
                           <div className="text-xs text-muted-foreground truncate">
                             {formatDateToBrazilian(group.firstDate)} • {group.installments}x
+                            {(() => {
+                              const cardId = group.transactions[0]?.card_id;
+                              const card = creditCards.find(c => c.id === cardId);
+                              return card ? ` • ${card.card_name}` : cardId ? '' : ' • ⚠️ Sem cartão';
+                            })()}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
