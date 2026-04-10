@@ -1189,7 +1189,7 @@ const Index = () => {
             <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -1225,6 +1225,15 @@ const Index = () => {
               >
                 <Wallet className="h-4 w-4 sm:mb-1 text-fixed group-hover:scale-110 transition-transform" />
                 <span className="text-xs hidden sm:inline">Fixos</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/credit-cards')}
+                className="flex flex-col items-center p-3 h-auto hover-scale group"
+              >
+                <CreditCard className="h-4 w-4 sm:mb-1 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Cartões</span>
               </Button>
               <Button
                 variant="outline"
