@@ -51,6 +51,7 @@ interface UserProfile {
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { cards: creditCards, reload: reloadCards } = useCreditCards();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,8 +80,13 @@ const Index = () => {
     is_recurrent: false,
     installments: 1,
     ideal_day: 5,
-    totalAmount: 0 // Valor total para compras parceladas
+    totalAmount: 0,
+    card_id: '' as string
   });
+
+  // Card selection for new cycle
+  const [showCardCycleChoice, setShowCardCycleChoice] = useState(false);
+  const [selectedCycleCardId, setSelectedCycleCardId] = useState<string | null>(null);
 
   const [editTransaction, setEditTransaction] = useState({
     description: '',
