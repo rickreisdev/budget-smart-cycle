@@ -17,6 +17,7 @@ import { formatDateToBrazilian } from '@/lib/utils';
 import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
 import { useFormatCurrency } from '@/hooks/useFormatCurrency';
+import { useCreditCards } from '@/hooks/useCreditCards';
 
 interface Transaction {
   id: string;
@@ -29,6 +30,7 @@ interface Transaction {
   current_installment?: number;
   ideal_day?: number;
   created_at?: string;
+  card_id?: string | null;
 }
 
 const InstalmentPurchases = () => {
