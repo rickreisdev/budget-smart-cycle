@@ -298,7 +298,8 @@ const InstalmentPurchases = () => {
     setEditTransaction({
       description: baseDescription,
       amount: transaction.amount,
-      installments: transaction.installments || 1
+      installments: transaction.installments || 1,
+      card_id: transaction.card_id || ''
     });
   };
 
