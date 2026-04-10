@@ -106,7 +106,8 @@ const InstalmentPurchases = () => {
         installments: item.installments || 1,
         current_installment: item.current_installment || 1,
         ideal_day: item.ideal_day || undefined,
-        created_at: item.created_at
+        created_at: item.created_at,
+        card_id: item.card_id || null
       }));
       setTransactions(typedTransactions);
     }
