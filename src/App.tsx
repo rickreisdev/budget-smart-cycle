@@ -13,6 +13,7 @@ import RecurringPurchases from "./pages/RecurringPurchases";
 import FixedExpenses from "./pages/FixedExpenses";
 import Income from "./pages/Income";
 import ShoppingList from "./pages/ShoppingList";
+import CreditCards from "./pages/CreditCards";
 import { Footer } from "@/components/Footer";
 import { ValuesVisibilityProvider } from "@/hooks/useValuesVisibility";
 import { ValuesToggle } from "@/components/ValuesToggle";
