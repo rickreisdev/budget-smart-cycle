@@ -17,6 +17,7 @@ import { formatDateToBrazilian } from '@/lib/utils';
 import { escapeLikePattern } from '@/lib/sanitize';
 import { useNavigate } from 'react-router-dom';
 import { useFormatCurrency } from '@/hooks/useFormatCurrency';
+import { useCreditCards } from '@/hooks/useCreditCards';
 
 interface Transaction {
   id: string;
@@ -29,11 +30,13 @@ interface Transaction {
   current_installment?: number;
   ideal_day?: number;
   created_at?: string;
+  card_id?: string | null;
 }
 
 const InstalmentPurchases = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { cards: creditCards } = useCreditCards();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -44,7 +47,8 @@ const InstalmentPurchases = () => {
   const [editTransaction, setEditTransaction] = useState({
     description: '',
     amount: 0,
-    installments: 1
+    installments: 1,
+    card_id: '' as string
   });
 
   const formatCurrency = useFormatCurrency();
@@ -102,7 +106,8 @@ const InstalmentPurchases = () => {
         installments: item.installments || 1,
         current_installment: item.current_installment || 1,
         ideal_day: item.ideal_day || undefined,
-        created_at: item.created_at
+        created_at: item.created_at,
+        card_id: item.card_id || null
       }));
       setTransactions(typedTransactions);
     }
@@ -227,7 +232,8 @@ const InstalmentPurchases = () => {
               is_recurrent: false,
               installments: editTransaction.installments,
               current_installment: i + 1,
-              ideal_day: editingTransaction.ideal_day
+              ideal_day: editingTransaction.ideal_day,
+              ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
             });
           }
 
@@ -241,7 +247,8 @@ const InstalmentPurchases = () => {
           const { error } = await supabase
             .from('transactions')
             .update({
-              amount: editTransaction.amount
+              amount: editTransaction.amount,
+              ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
             })
             .eq('user_id', user?.id)
             .eq('type', 'card')
@@ -272,7 +279,8 @@ const InstalmentPurchases = () => {
           .from('transactions')
           .update({
             description: editTransaction.description,
-            amount: editTransaction.amount
+            amount: editTransaction.amount,
+            ...(editTransaction.card_id ? { card_id: editTransaction.card_id } : {})
           })
           .eq('id', editingTransaction.id);
 
@@ -294,7 +302,8 @@ const InstalmentPurchases = () => {
     setEditTransaction({
       description: baseDescription,
       amount: transaction.amount,
-      installments: transaction.installments || 1
+      installments: transaction.installments || 1,
+      card_id: transaction.card_id || ''
     });
   };
 
@@ -389,6 +398,11 @@ const InstalmentPurchases = () => {
                           <div className="font-medium text-sm truncate">{group.baseDescription}</div>
                           <div className="text-xs text-muted-foreground truncate">
                             {formatDateToBrazilian(group.firstDate)} • {group.installments}x
+                            {(() => {
+                              const cardId = group.transactions[0]?.card_id;
+                              const card = creditCards.find(c => c.id === cardId);
+                              return card ? ` • ${card.card_name}` : cardId ? '' : ' • ⚠️ Sem cartão';
+                            })()}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -506,6 +520,22 @@ const InstalmentPurchases = () => {
                     installments: parseInt(e.target.value) || 1
                   })}
                 />
+              </div>
+              <div>
+                <Label>Cartão</Label>
+                <Select
+                  value={editTransaction.card_id}
+                  onValueChange={(v) => setEditTransaction({...editTransaction, card_id: v})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione o cartão" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {creditCards.map(card => (
+                      <SelectItem key={card.id} value={card.id}>{card.card_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex gap-2">
                 <Button onClick={updateTransaction}>Salvar</Button>

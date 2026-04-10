@@ -21,6 +21,7 @@ import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useNavigate } from 'react-router-dom';
 import MonthSelector from '@/components/MonthSelector';
 import ShoppingListModal from '@/components/ShoppingListModal';
+import { useCreditCards } from '@/hooks/useCreditCards';
 
 interface Transaction {
   id: string;
@@ -33,6 +34,7 @@ interface Transaction {
   current_installment?: number;
   ideal_day?: number;
   created_at?: string;
+  card_id?: string | null;
 }
 
 interface UserProfile {
@@ -49,6 +51,7 @@ interface UserProfile {
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { cards: creditCards, reload: reloadCards } = useCreditCards();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,8 +80,13 @@ const Index = () => {
     is_recurrent: false,
     installments: 1,
     ideal_day: 5,
-    totalAmount: 0 // Valor total para compras parceladas
+    totalAmount: 0,
+    card_id: '' as string
   });
+
+  // Card selection for new cycle
+  const [showCardCycleChoice, setShowCardCycleChoice] = useState(false);
+  const [selectedCycleCardId, setSelectedCycleCardId] = useState<string | null>(null);
 
   const [editTransaction, setEditTransaction] = useState({
     description: '',
@@ -200,7 +208,8 @@ const Index = () => {
         installments: item.installments || 1,
         current_installment: item.current_installment || 1,
         ideal_day: item.ideal_day || undefined,
-        created_at: item.created_at
+        created_at: item.created_at,
+        card_id: item.card_id || null
       }));
       setTransactions(typedTransactions);
     }
@@ -282,7 +291,7 @@ const Index = () => {
       return;
     }
 
-    const transactionData = {
+    const transactionData: any = {
       user_id: user.id,
       type: newTransaction.type,
       description: newTransaction.description,
@@ -291,7 +300,8 @@ const Index = () => {
       is_recurrent: newTransaction.is_recurrent,
       installments: newTransaction.installments,
       current_installment: 1,
-      ideal_day: newTransaction.ideal_day
+      ideal_day: newTransaction.ideal_day,
+      ...(newTransaction.type === 'card' && newTransaction.card_id ? { card_id: newTransaction.card_id } : {})
     };
 
     if (newTransaction.type === 'card' && !newTransaction.is_recurrent) {
@@ -363,7 +373,8 @@ const Index = () => {
       is_recurrent: false,
       installments: 1,
       ideal_day: userProfile?.ideal_day || 5,
-      totalAmount: 0
+      totalAmount: 0,
+      card_id: ''
     });
     setShowAddTransactionDialog(false);
   };
@@ -621,12 +632,16 @@ const Index = () => {
         .eq('type', 'casual')
         .like('date', `${escapeLikePattern(userProfile.current_cycle)}%`);
 
-      // Get current cycle installment purchases
-      const currentCycleTransactions = transactions.filter(t => 
-        t.date.startsWith(userProfile.current_cycle) && 
-        t.type === 'card' && 
-        !t.is_recurrent
-      );
+      // Get current cycle installment purchases - filter by selected card if applicable
+      const currentCycleTransactions = transactions.filter(t => {
+        if (!t.date.startsWith(userProfile.current_cycle)) return false;
+        if (t.type !== 'card' || t.is_recurrent) return false;
+        // Filter by selected card
+        if (selectedCycleCardId) {
+          return t.card_id === selectedCycleCardId;
+        }
+        return true; // "all cards" selected
+      });
 
       // Group installment purchases by base description and amount
       const installmentGroups = new Map();
@@ -648,8 +663,6 @@ const Index = () => {
 
       // Process each installment group
       for (const [key, group] of installmentGroups) {
-        // Simply delete the current cycle's installment
-        // Future installments already exist from when the purchase was created
         await supabase
           .from('transactions')
           .delete()
@@ -661,7 +674,6 @@ const Index = () => {
       }
 
       // Handle recurrent transactions for new cycle
-      // Get all unique recurrent transactions that should exist
       const uniqueRecurrentMap = new Map();
       
       transactions
@@ -673,7 +685,6 @@ const Index = () => {
           }
         });
 
-      // Check which recurrent transactions already exist in the new cycle
       const { data: existingRecurrentInNewCycle } = await supabase
         .from('transactions')
         .select('description, amount, type')
@@ -685,7 +696,6 @@ const Index = () => {
         (existingRecurrentInNewCycle || []).map(t => `${t.description}_${t.amount}_${t.type}`)
       );
 
-      // Only create recurrent transactions that don't already exist in the new cycle
       const recurrentTransactionsToInsert = Array.from(uniqueRecurrentMap.values())
         .filter(t => {
           const key = `${t.description}_${t.amount}_${t.type}`;
@@ -712,6 +722,7 @@ const Index = () => {
       loadUserProfile();
       loadTransactions();
       setShowIncomeChoiceDialog(false);
+      setSelectedCycleCardId(null);
       toast.success('Novo ciclo iniciado!');
     }
   };
@@ -719,15 +730,26 @@ const Index = () => {
   const startNewCycle = () => {
     if (!user || !userProfile) return;
     
-    // Check if user has monthly_salary or initial_income to ask
+    // If there are credit cards, show card selection first
+    if (creditCards.length > 0) {
+      setShowCardCycleChoice(true);
+      return;
+    }
+    
+    // No cards - proceed with old flow
+    proceedWithNewCycle();
+  };
+
+  const proceedWithNewCycle = () => {
+    if (!userProfile) return;
+    setShowCardCycleChoice(false);
+    
     const hasMonthlyIncome = userProfile.monthly_salary > 0;
     const hasInitialIncome = userProfile.initial_income > 0;
     
     if (hasMonthlyIncome || hasInitialIncome) {
-      // Show dialog to choose income
       setShowIncomeChoiceDialog(true);
     } else {
-      // No income to add, proceed directly
       startNewCycleWithIncome('none');
     }
   };
@@ -1178,7 +1200,7 @@ const Index = () => {
             <CardTitle className="text-lg">Gerenciar por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -1214,6 +1236,15 @@ const Index = () => {
               >
                 <Wallet className="h-4 w-4 sm:mb-1 text-fixed group-hover:scale-110 transition-transform" />
                 <span className="text-xs hidden sm:inline">Fixos</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/credit-cards')}
+                className="flex flex-col items-center p-3 h-auto hover-scale group"
+              >
+                <CreditCard className="h-4 w-4 sm:mb-1 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-xs hidden sm:inline">Cartões</span>
               </Button>
               <Button
                 variant="outline"
@@ -1351,6 +1382,27 @@ const Index = () => {
                 
                 {newTransaction.type === 'card' && (
                   <>
+                    <div>
+                      <Label>Cartão</Label>
+                      <Select
+                        value={newTransaction.card_id}
+                        onValueChange={(v) => setNewTransaction({...newTransaction, card_id: v})}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Selecione o cartão" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {creditCards.map(card => (
+                            <SelectItem key={card.id} value={card.id}>{card.card_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {creditCards.length === 0 && (
+                        <p className="text-xs text-destructive mt-1">
+                          Nenhum cartão cadastrado. <button className="underline" onClick={() => navigate('/credit-cards')}>Cadastrar cartão</button>
+                        </p>
+                      )}
+                    </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="recurrent"
@@ -1370,7 +1422,6 @@ const Index = () => {
                             onFocus={(e) => e.target.select()}
                             onChange={(e) => {
                              const installments = Number(e.target.value);
-                             // Se já tem um valor total definido, recalcula o valor por parcela
                              if (newTransaction.totalAmount > 0) {
                                const amountPerInstallment = newTransaction.totalAmount / installments;
                                setNewTransaction({
@@ -1893,6 +1944,54 @@ const Index = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Card Choice Dialog for New Cycle */}
+        <Dialog open={showCardCycleChoice} onOpenChange={setShowCardCycleChoice}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Para qual cartão iniciar novo ciclo?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Selecione o cartão cujas parcelas devem avançar para o próximo ciclo.
+              </p>
+              {creditCards.map(card => (
+                <Button
+                  key={card.id}
+                  onClick={() => {
+                    setSelectedCycleCardId(card.id);
+                    proceedWithNewCycle();
+                  }}
+                  variant="outline"
+                  className="w-full justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    {card.card_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">Venc. dia {card.due_day}</span>
+                </Button>
+              ))}
+              <Button
+                onClick={() => {
+                  setSelectedCycleCardId(null);
+                  proceedWithNewCycle();
+                }}
+                className="w-full"
+                variant="secondary"
+              >
+                Todos os cartões
+              </Button>
+              <Button
+                onClick={() => setShowCardCycleChoice(false)}
+                variant="ghost"
+                className="w-full"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Income Choice Dialog for New Cycle */}
         <Dialog open={showIncomeChoiceDialog} onOpenChange={setShowIncomeChoiceDialog}>

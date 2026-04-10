@@ -13,6 +13,7 @@ import RecurringPurchases from "./pages/RecurringPurchases";
 import FixedExpenses from "./pages/FixedExpenses";
 import Income from "./pages/Income";
 import ShoppingList from "./pages/ShoppingList";
+import CreditCards from "./pages/CreditCards";
 import { Footer } from "@/components/Footer";
 import { ValuesVisibilityProvider } from "@/hooks/useValuesVisibility";
 import { ValuesToggle } from "@/components/ValuesToggle";
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/fixed-expenses" element={<FixedExpenses />} />
                 <Route path="/income" element={<Income />} />
                 <Route path="/shopping-list" element={<ShoppingList />} />
+                <Route path="/credit-cards" element={<CreditCards />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
