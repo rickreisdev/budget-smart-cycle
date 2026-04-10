@@ -1945,6 +1945,54 @@ const Index = () => {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Card Choice Dialog for New Cycle */}
+        <Dialog open={showCardCycleChoice} onOpenChange={setShowCardCycleChoice}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Para qual cartão iniciar novo ciclo?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Selecione o cartão cujas parcelas devem avançar para o próximo ciclo.
+              </p>
+              {creditCards.map(card => (
+                <Button
+                  key={card.id}
+                  onClick={() => {
+                    setSelectedCycleCardId(card.id);
+                    proceedWithNewCycle();
+                  }}
+                  variant="outline"
+                  className="w-full justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    {card.card_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">Venc. dia {card.due_day}</span>
+                </Button>
+              ))}
+              <Button
+                onClick={() => {
+                  setSelectedCycleCardId(null);
+                  proceedWithNewCycle();
+                }}
+                className="w-full"
+                variant="secondary"
+              >
+                Todos os cartões
+              </Button>
+              <Button
+                onClick={() => setShowCardCycleChoice(false)}
+                variant="ghost"
+                className="w-full"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Income Choice Dialog for New Cycle */}
         <Dialog open={showIncomeChoiceDialog} onOpenChange={setShowIncomeChoiceDialog}>
           <DialogContent>
