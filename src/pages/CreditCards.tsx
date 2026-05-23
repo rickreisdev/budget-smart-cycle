@@ -300,7 +300,7 @@ const CreditCards = () => {
             <DialogHeader>
               <DialogTitle>Editar Cartão</DialogTitle>
             </DialogHeader>
-            <CardForm onSubmit={updateCard} submitLabel="Salvar" />
+            {renderCardForm(updateCard, 'Salvar')}
           </DialogContent>
         </Dialog>
       </div>
