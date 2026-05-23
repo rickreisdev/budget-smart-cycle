@@ -142,7 +142,7 @@ const CreditCards = () => {
     setFormData({ card_name: '', due_day: 10, days_before_closing: 7 });
   };
 
-  const CardForm = ({ onSubmit, submitLabel }: { onSubmit: () => void; submitLabel: string }) => (
+  const renderCardForm = (onSubmit: () => void, submitLabel: string) => (
     <div className="space-y-4">
       <div>
         <Label>Nome do Cartão</Label>
@@ -195,6 +195,7 @@ const CreditCards = () => {
       </div>
     </div>
   );
+
 
   if (loading) {
     return (
@@ -289,7 +290,7 @@ const CreditCards = () => {
             <DialogHeader>
               <DialogTitle>Novo Cartão de Crédito</DialogTitle>
             </DialogHeader>
-            <CardForm onSubmit={addCard} submitLabel="Adicionar" />
+            {renderCardForm(addCard, 'Adicionar')}
           </DialogContent>
         </Dialog>
 
@@ -299,7 +300,7 @@ const CreditCards = () => {
             <DialogHeader>
               <DialogTitle>Editar Cartão</DialogTitle>
             </DialogHeader>
-            <CardForm onSubmit={updateCard} submitLabel="Salvar" />
+            {renderCardForm(updateCard, 'Salvar')}
           </DialogContent>
         </Dialog>
       </div>
