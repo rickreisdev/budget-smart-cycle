@@ -142,7 +142,7 @@ const CreditCards = () => {
     setFormData({ card_name: '', due_day: 10, days_before_closing: 7 });
   };
 
-  const CardForm = ({ onSubmit, submitLabel }: { onSubmit: () => void; submitLabel: string }) => (
+  const renderCardForm = (onSubmit: () => void, submitLabel: string) => (
     <div className="space-y-4">
       <div>
         <Label>Nome do Cartão</Label>
@@ -195,6 +195,7 @@ const CreditCards = () => {
       </div>
     </div>
   );
+
 
   if (loading) {
     return (
