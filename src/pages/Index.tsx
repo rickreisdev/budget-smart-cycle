@@ -1466,6 +1466,10 @@ const Index = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Exportar PDF
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSnapshot}>
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Captura do Saldo (PNG)
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
