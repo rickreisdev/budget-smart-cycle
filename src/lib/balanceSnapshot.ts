@@ -42,8 +42,7 @@ export async function generateBalanceSnapshot(data: SnapshotData): Promise<void>
   node.style.position = 'fixed';
   node.style.top = '0';
   node.style.left = '0';
-  node.style.zIndex = '-9999';
-  node.style.opacity = '0';
+  node.style.transform = 'translate(-200vw, 0)';
   node.style.pointerEvents = 'none';
   node.style.width = '520px';
   node.style.padding = '32px';
