@@ -123,7 +123,20 @@ export async function generateBalanceSnapshot(data: SnapshotData): Promise<void>
 
   document.body.appendChild(node);
   try {
-    const dataUrl = await toPng(node, { pixelRatio: 2, cacheBust: true });
+    // Wait for layout/paint before capturing
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const opts = {
+      pixelRatio: 2,
+      cacheBust: true,
+      backgroundColor: '#0f172a',
+      skipFonts: true,
+      width: 520,
+      height: node.offsetHeight,
+    };
+    // html-to-image sometimes returns blank on the first call — warm it up
+    await toPng(node, opts);
+    await toPng(node, opts);
+    const dataUrl = await toPng(node, opts);
     const link = document.createElement('a');
     link.download = `saldo-${data.cycle}-${Date.now()}.png`;
     link.href = dataUrl;
