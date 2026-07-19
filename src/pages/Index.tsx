@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText, Clock, ShoppingCart } from 'lucide-react';
+import { Trash2, Plus, DollarSign, CreditCard, TrendingUp, Wallet, LogOut, User, ChevronDown, Edit, RotateCcw, Edit2, CalendarIcon, Download, FileText, Clock, ShoppingCart, Image as ImageIcon } from 'lucide-react';
+import { generateBalanceSnapshot } from '@/lib/balanceSnapshot';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -909,6 +910,36 @@ const Index = () => {
     toast.success('Transações exportadas em CSV com sucesso!');
   };
 
+  const handleSnapshot = async () => {
+    if (!userProfile) return;
+    const t = calculateTotals();
+    const cycleTx = transactions
+      .filter((tx) => tx.date.startsWith(userProfile.current_cycle))
+      .sort((a, b) => (b.date + (b.created_at ?? '')).localeCompare(a.date + (a.created_at ?? '')))
+      .slice(0, 8)
+      .map((tx) => ({
+        description: tx.description,
+        amount: Number(tx.amount),
+        date: tx.date,
+        type: tx.type,
+      }));
+    try {
+      await generateBalanceSnapshot({
+        username: userProfile.username,
+        cycle: userProfile.current_cycle,
+        availableBalance: t.availableBalance,
+        totalIncome: t.totalIncome,
+        totalExpenses: t.totalExpenses,
+        totalSaved: userProfile.total_saved || 0,
+        transactions: cycleTx,
+      });
+      toast.success('Captura de tela gerada!');
+    } catch {
+      toast.error('Erro ao gerar captura');
+    }
+  };
+
+
   const exportTransactionsToPDF = () => {
     if (!userProfile) return;
 
@@ -1464,6 +1495,10 @@ const Index = () => {
               <DropdownMenuItem onClick={exportTransactionsToPDF}>
                 <FileText className="h-4 w-4 mr-2" />
                 Exportar PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSnapshot}>
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Captura do Saldo (PNG)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
