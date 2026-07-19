@@ -41,13 +41,18 @@ export async function generateBalanceSnapshot(data: SnapshotData): Promise<void>
   const node = document.createElement('div');
   node.style.position = 'fixed';
   node.style.top = '0';
-  node.style.left = '-10000px';
+  node.style.left = '0';
+  node.style.zIndex = '-9999';
+  node.style.opacity = '0';
+  node.style.pointerEvents = 'none';
   node.style.width = '520px';
   node.style.padding = '32px';
   node.style.background = 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)';
+  node.style.backgroundColor = '#0f172a';
   node.style.color = '#f8fafc';
-  node.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
+  node.style.fontFamily = "system-ui, -apple-system, sans-serif";
   node.style.borderRadius = '24px';
+  node.style.boxSizing = 'border-box';
 
   const balanceColor = data.availableBalance >= 0 ? '#10b981' : '#ef4444';
   const now = new Date();
